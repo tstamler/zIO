@@ -1,0 +1,1 @@
+UNEXPECTED CALL TO rewriteAppendOnlyFileBackground(aof.c)

@@ -1,0 +1,7 @@
+1) modify Strata operation log to use pointers instead of storing data
+2) modify Strata digest to digest directly from socket buffer
+
+optimizations:
+1) page remapping
+2) kernel fd allocation
+3) reduce copies

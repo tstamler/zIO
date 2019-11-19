@@ -1,0 +1,57 @@
+133110:M 30 Jul 12:36:58.967 * Increased maximum number of open files to 10032 (it was originally set to 1024).
+                _._                                                  
+           _.-``__ ''-._                                             
+      _.-``    `.  `_.  ''-._           Redis 3.2.8 (fdf761f0/1) 64 bit
+  .-`` .-```.  ```\/    _.,_ ''-._                                   
+ (    '      ,       .-`  | `,    )     Running in standalone mode
+ |`-._`-...-` __...-.``-._|'` _.-'|     Port: 21242
+ |    `-._   `._    /     _.-'    |     PID: 133110
+  `-._    `-._  `-./  _.-'    _.-'                                   
+ |`-._`-._    `-.__.-'    _.-'_.-'|                                  
+ |    `-._`-._        _.-'_.-'    |           http://redis.io        
+  `-._    `-._`-.__.-'_.-'    _.-'                                   
+ |`-._`-._    `-.__.-'    _.-'_.-'|                                  
+ |    `-._`-._        _.-'_.-'    |                                  
+  `-._    `-._`-.__.-'_.-'    _.-'                                   
+      `-._    `-.__.-'    _.-'                                       
+          `-._        _.-'                                           
+              `-.__.-'                                               
+
+133110:M 30 Jul 12:36:58.968 # WARNING: The TCP backlog setting of 511 cannot be enforced because /proc/sys/net/core/somaxconn is set to the lower value of 128.
+133110:M 30 Jul 12:36:58.968 # Server started, Redis version 3.2.8
+133110:M 30 Jul 12:36:58.968 # WARNING overcommit_memory is set to 0! Background save may fail under low memory condition. To fix this issue add 'vm.overcommit_memory = 1' to /etc/sysctl.conf and then reboot or run the command 'sysctl vm.overcommit_memory=1' for this to take effect.
+133110:M 30 Jul 12:36:58.968 # WARNING you have Transparent Huge Pages (THP) support enabled in your kernel. This will create latency and memory usage issues with Redis. To fix this issue run the command 'echo never > /sys/kernel/mm/transparent_hugepage/enabled' as root, and add it to your /etc/rc.local in order to retain the setting after a reboot. Redis must be restarted after THP is disabled.
+133110:M 30 Jul 12:36:58.968 * The server is now ready to accept connections on port 21242
+133110:M 30 Jul 12:36:58.968 - 0 clients connected (0 slaves), 629160 bytes in use
+133110:M 30 Jul 12:36:58.973 - Accepted 127.0.0.1:35949
+133110:M 30 Jul 12:36:58.973 - Client closed connection
+133110:M 30 Jul 12:36:59.085 - Accepted 127.0.0.1:36063
+133110:M 30 Jul 12:36:59.085 - Accepted 127.0.0.1:40457
+133110:M 30 Jul 12:36:59.128 - Accepted 127.0.0.1:43487
+133110:M 30 Jul 12:36:59.172 - Accepted 127.0.0.1:39455
+133110:M 30 Jul 12:36:59.172 - Protocol error from client: id=6 addr=127.0.0.1:39455 fd=7 name= age=0 idle=0 flags=N db=9 sub=0 psub=0 multi=-1 qbuf=11 qbuf-free=32757 obl=47 oll=0 omem=0 events=r cmd=select
+133110:M 30 Jul 12:36:59.172 - Accepted 127.0.0.1:39391
+133110:M 30 Jul 12:36:59.172 - Protocol error from client: id=7 addr=127.0.0.1:39391 fd=7 name= age=0 idle=0 flags=N db=9 sub=0 psub=0 multi=-1 qbuf=26 qbuf-free=32742 obl=44 oll=0 omem=0 events=r cmd=select
+133110:M 30 Jul 12:36:59.172 - Accepted 127.0.0.1:35905
+133110:M 30 Jul 12:36:59.172 - Protocol error from client: id=8 addr=127.0.0.1:35905 fd=7 name= age=0 idle=0 flags=N db=9 sub=0 psub=0 multi=-1 qbuf=26 qbuf-free=32742 obl=42 oll=0 omem=0 events=r cmd=select
+133110:M 30 Jul 12:36:59.172 - Accepted 127.0.0.1:41289
+133110:M 30 Jul 12:36:59.172 - Protocol error from client: id=9 addr=127.0.0.1:41289 fd=7 name= age=0 idle=0 flags=N db=9 sub=0 psub=0 multi=-1 qbuf=33 qbuf-free=32735 obl=42 oll=0 omem=0 events=r cmd=select
+133110:M 30 Jul 12:36:59.172 - Accepted 127.0.0.1:43225
+133110:M 30 Jul 12:36:59.172 - Protocol error from client: id=10 addr=127.0.0.1:43225 fd=7 name= age=0 idle=0 flags=N db=9 sub=0 psub=0 multi=-1 qbuf=29 qbuf-free=32739 obl=42 oll=0 omem=0 events=r cmd=select
+133110:M 30 Jul 12:36:59.172 - Accepted 127.0.0.1:45567
+133110:M 30 Jul 12:36:59.172 - Protocol error from client: id=11 addr=127.0.0.1:45567 fd=7 name= age=0 idle=0 flags=N db=9 sub=0 psub=0 multi=-1 qbuf=9 qbuf-free=32759 obl=44 oll=0 omem=0 events=r cmd=select
+133110:M 30 Jul 12:36:59.173 - Accepted 127.0.0.1:46395
+133110:M 30 Jul 12:36:59.173 - Accepted 127.0.0.1:33033
+133110:M 30 Jul 12:36:59.173 - Protocol error from client: id=13 addr=127.0.0.1:33033 fd=8 name= age=0 idle=0 flags=N db=9 sub=0 psub=0 multi=-1 qbuf=37 qbuf-free=32731 obl=51 oll=0 omem=0 events=r cmd=select
+133110:M 30 Jul 12:36:59.173 - Accepted 127.0.0.1:34137
+133110:M 30 Jul 12:36:59.188 - Protocol error from client: id=14 addr=127.0.0.1:34137 fd=8 name= age=0 idle=0 flags=N db=0 sub=0 psub=0 multi=-1 qbuf=65542 qbuf-free=65550 obl=45 oll=0 omem=0 events=r cmd=NULL
+133110:M 30 Jul 12:36:59.188 - Accepted 127.0.0.1:45223
+133110:M 30 Jul 12:36:59.204 - Protocol error from client: id=15 addr=127.0.0.1:45223 fd=8 name= age=0 idle=0 flags=N db=0 sub=0 psub=0 multi=-1 qbuf=65550 qbuf-free=65572 obl=49 oll=0 omem=0 events=r cmd=NULL
+133110:M 30 Jul 12:36:59.204 - Accepted 127.0.0.1:39229
+133110:M 30 Jul 12:36:59.219 - Protocol error from client: id=16 addr=127.0.0.1:39229 fd=8 name= age=0 idle=0 flags=N db=0 sub=0 psub=0 multi=-1 qbuf=65543 qbuf-free=65551 obl=45 oll=0 omem=0 events=r cmd=NULL
+133110:signal-handler (1564490219) Received SIGTERM scheduling shutdown...
+133110:M 30 Jul 12:36:59.268 # User requested shutdown...
+133110:M 30 Jul 12:36:59.268 * Saving the final RDB snapshot before exiting.
+133110:M 30 Jul 12:36:59.268 * DB saved on disk
+133110:M 30 Jul 12:36:59.268 * Removing the pid file.
+133110:M 30 Jul 12:36:59.269 # Redis is now ready to exit, bye bye...
