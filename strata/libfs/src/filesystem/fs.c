@@ -395,7 +395,7 @@ void read_root_inode(uint8_t dev_id)
 	read_ondisk_inode(dev_id, ROOTINO, &_dinode);
 	_dinode.dev = dev_id;
 	mlfs_debug("root inode block %lx size %lu\n",
-			IBLOCK(ROOTINO, disk_sb[dev_id]), dip->size);
+			IBLOCK(ROOTINO, disk_sb[dev_id]), ip->size);
 
 	mlfs_assert(_dinode.itype == T_DIR);
 
@@ -1025,8 +1025,8 @@ int check_log_invalidation(struct fcache_block *_fcache_block)
 	if ((version_diff > 1) || 
 			(version_diff == 1 && 
 			 _fcache_block->log_addr < g_fs_log->next_avail_header)) {
-		mlfs_debug("invalidate: inum %u offset %lu -> addr %lu\n", 
-				ip->inum, _off, _fcache_block->log_addr);
+		//mlfs_debug("invalidate: inum %u offset %lu -> addr %lu\n", 
+		//		ip->inum, _off, _fcache_block->log_addr);
 		_fcache_block->log_addr = 0;
 
 		// Delete fcache_block when it is not used for read cache.

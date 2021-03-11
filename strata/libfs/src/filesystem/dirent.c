@@ -565,6 +565,7 @@ static struct inode* namex(char *path, int parent, char *name)
 		ilock(ip);
 		if (ip->itype != T_DIR){
 			iunlockput(ip);
+			printf("lookup failed 1\n");
 			return NULL;
 		}
 		if (parent && *path == '\0') {
@@ -574,6 +575,7 @@ static struct inode* namex(char *path, int parent, char *name)
 		}
 		if ((next = dir_lookup(ip, name, 0)) == NULL) {
 			iunlockput(ip);
+			printf("lookup failed 2\n");
 			return NULL;
 		}
 
@@ -583,6 +585,7 @@ static struct inode* namex(char *path, int parent, char *name)
 
 	if (parent) {
 		iput(ip);
+		printf("lookup failed 3\n");
 		return NULL;
 	}
 
@@ -614,8 +617,11 @@ struct inode* namei(char *path)
 
 	inode = dlookup_find(g_root_dev, path); 
 
-	if (inode && (inode->flags & I_DELETING)) 
+	if (inode && (inode->flags & I_DELETING))
+	{
+		printf("deleting???\n");	
 		return NULL;
+	}
 
 	if (!inode) {
 		inode = namex(path, 0, name);

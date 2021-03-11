@@ -101,7 +101,7 @@ endif
 
 FINAL_CFLAGS=$(STD) $(WARN) $(OPT) $(DEBUG) $(CFLAGS) $(REDIS_CFLAGS) -fPIC -I../deps/geohash-int
 FINAL_LDFLAGS=$(LDFLAGS) $(REDIS_LDFLAGS) $(DEBUG)
-FINAL_LIBS=-lm $(RSOCK_LIBS)
+FINAL_LIBS=-lm $(RSOCK_LIBS) 
 DEBUG=-g -ggdb
 
 ifeq ($(uname_S),SunOS)
@@ -135,6 +135,7 @@ endif
 endif
 endif
 endif
+
 # Include paths to dependencies
 FINAL_CFLAGS+= -I../deps/hiredis -I../deps/linenoise -I../deps/lua/src
 
@@ -150,10 +151,10 @@ endif
 
 ifeq ($(MALLOC),jemalloc)
 	DEPENDENCY_TARGETS+= jemalloc
-	#FINAL_CFLAGS+= -DUSE_JEMALLOC -I../deps/jemalloc/include
-	FINAL_CFLAGS+= -DUSE_JEMALLOC -I/home/tstamler/strata/bench/redis-3.2.8/deps/jemalloc/include
-	#FINAL_LIBS+= ../deps/jemalloc/lib/libjemalloc.a
-	FINAL_LIBS+= /home/tstamler/strata/bench/redis-3.2.8/deps/jemalloc/lib/libjemalloc_pic.a
+	FINAL_CFLAGS+= -DUSE_JEMALLOC -I../deps/jemalloc/include
+	#FINAL_CFLAGS+= -DUSE_JEMALLOC -I/home/tstamler/stratas_dev/strata/libfs/lib/jemalloc-4.5.0/include
+	FINAL_LIBS+= ../deps/jemalloc/lib/libjemalloc.a
+	#FINAL_LIBS+= /home/tstamler/stratas_dev/strata/libfs/lib/jemalloc-4.5.0/lib/libjemalloc_pic.a
 endif
 
 FINAL_CFLAGS+= $(MLFS_CFLAGS)

@@ -68,6 +68,7 @@ int mlfs_posix_open(char *path, int flags, uint16_t mode)
 
 		if (!inode) {
 			commit_log_tx();
+			printf("no entry 1\n");
 			return -ENOENT;
 		}
 	} else {
@@ -81,6 +82,7 @@ int mlfs_posix_open(char *path, int flags, uint16_t mode)
 
 		if ((inode = namei(path)) == NULL) {
 			commit_log_tx();
+			printf("no entry 2 %s path, %p node\n", path, inode);
 			return -ENOENT;
 		}
 

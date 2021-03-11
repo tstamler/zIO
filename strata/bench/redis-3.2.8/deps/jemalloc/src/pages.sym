@@ -1,0 +1,9 @@
+pages_boot
+pages_commit
+pages_decommit
+pages_huge
+pages_map
+pages_nohuge
+pages_purge_forced
+pages_purge_lazy
+pages_unmap

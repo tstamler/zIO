@@ -10,7 +10,7 @@ LIBNAME=libhiredis
 
 HIREDIS_MAJOR=0
 HIREDIS_MINOR=11
-RSOCK_FLAGS=-D__RDMA__
+#RSOCK_FLAGS=-D__RDMA__
 
 # redis-server configuration used for testing
 REDIS_PORT=56379

@@ -33,8 +33,27 @@
 
 #include <utils.h>
 #include <tas_sockets.h>
+#include <skiplist.h>
+
+#define OPT_THRESHOLD -1
+//#define OPT_THRESHOLD 4096
+#define PAGE_MASK 0xfffffffff000
 
 static inline void ensure_init(void);
+
+struct addr_encoding {
+    uint64_t addr;
+    uint32_t len;
+    uint64_t code;
+    uint8_t bytes[64];
+};
+
+struct addr_track {
+    uint64_t last_addr;
+    uint16_t size;
+};
+
+struct addr_track roll_addr[2048];
 
 /* Function pointers to the libc functions */
 static int (*libc_socket)(int domain, int type, int protocol) = NULL;
@@ -81,6 +100,11 @@ static int (*libc_select)(int nfds, fd_set *readfds, fd_set *writefds,
 static int (*libc_pselect)(int nfds, fd_set *readfds, fd_set *writefds,
     fd_set *exceptfds, const struct timespec *timeout, const sigset_t *sigmask)
     = NULL;
+
+static void* (*libc_memcpy)(void* dest, const void* src, size_t n);
+static void* (*libc_memmove)(void* dest, const void* src, size_t n);
+
+skiplist addr_list;
 
 int socket(int domain, int type, int protocol)
 {
@@ -236,6 +260,18 @@ ssize_t read(int sockfd, void *buf, size_t count)
   if ((ret = tas_read(sockfd, buf, count)) == -1 && errno == EBADF) {
     return libc_read(sockfd, buf, count);
   }
+  //fprintf(stderr, "tas read %zu bytes, page mask %lx\n", ret, PAGE_MASK);
+  if(ret > OPT_THRESHOLD){
+	 //fprintf(stderr, "reading from network at %p, size %zu, key %lx\n", buf, ret, ((uint64_t) buf) & PAGE_MASK);
+	 if(roll_addr[sockfd].last_addr == (uint64_t) buf) {
+	     roll_addr[sockfd].last_addr = (uint64_t) buf + ret;
+	     roll_addr[sockfd].size += ret;
+	 } else {
+	     roll_addr[sockfd].last_addr = (uint64_t) buf + ret;
+	     roll_addr[sockfd].size = ret;
+	 }
+	 skiplist_insert(&addr_list, ((uint64_t) buf) & PAGE_MASK, (uint64_t) roll_addr[sockfd].last_addr - roll_addr[sockfd].size, roll_addr[sockfd].size); 
+  }
   return ret;
 }
 
@@ -284,10 +320,37 @@ ssize_t readv(int sockfd, const struct iovec *iov, int iovcnt)
 
 ssize_t write(int sockfd, const void *buf, size_t count)
 {
-  ssize_t ret;
+  ssize_t ret, ret2;
   ensure_init();
   if ((ret = tas_write(sockfd, buf, count)) == -1 && errno == EBADF) {
-    return libc_write(sockfd, buf, count);
+    size_t new_len = count;
+    ret = 0;
+    if (count > OPT_THRESHOLD) {
+	snode* entry = skiplist_search(&addr_list, ((uint64_t) buf) & PAGE_MASK);
+	//fprintf(stderr, "writing to linux from %p, size %zu, entry %p\n", buf, count, entry);
+	if(entry && entry->len <= count) {
+	    new_len = count - entry->len;
+	    struct addr_encoding* code = ((void*) buf) + new_len;
+	    code->addr = entry->orig;
+	    code->len = entry->len;
+	    code->code = 0xdeadbeef;
+	    new_len = sizeof(struct addr_encoding);
+	    //new_len += sizeof(struct addr_encoding);
+	    ret = count;
+	}
+	else {
+		//printf("entry not found\n");
+	}
+	skiplist_delete(&addr_list, ((uint64_t) buf) & PAGE_MASK);
+    }
+    //printf("write len %zu\n", new_len);
+    //new_len = sizeof(struct addr_encoding);
+    //ret = count;
+    ret2 = libc_write(sockfd, buf, new_len);
+    
+    if(ret2 < 0 || ret == 0) return ret2;
+    else return ret;
+    //return libc_write(sockfd, buf, new_len);
   }
   return ret;
 }
@@ -374,6 +437,39 @@ int epoll_pwait(int epfd, struct epoll_event *events, int maxevents,
   return tas_epoll_pwait(epfd, events, maxevents, timeout, sigmask);
 }
 
+void* memcpy (void* dest, const void* src, size_t n){
+  
+  ensure_init();	
+  if(n > OPT_THRESHOLD){
+	//fprintf(stderr, "copying %p to %p, size %zu\n", src, dest, n);
+  	//skiplist_dump(&addr_list);
+	snode* entry = skiplist_search(&addr_list, ((uint64_t) src) & PAGE_MASK);
+	//fprintf(stderr, "searching for %lx ret %p\n", ((uint64_t) src) & PAGE_MASK, entry);
+	if(entry) {
+		uint64_t original = entry->orig;
+		uint32_t length = entry->len;
+		skiplist_delete(&addr_list, ((uint64_t) src) & PAGE_MASK);
+		//fprintf(stderr, "deleting %lx ret %d\n", ((uint64_t) src) & PAGE_MASK, ret);
+		skiplist_insert(&addr_list, ((uint64_t) dest) & PAGE_MASK, original, length);
+		//fprintf(stderr, "inserting %lx ret %d\n", ((uint64_t) dest) & PAGE_MASK, ret);
+		//skiplist_dump(&addr_list);
+  		//return libc_memcpy(dest, src, 32);
+	}
+  }
+  return libc_memcpy(dest, src, n);
+}
+
+void* memmove (void* dest, const void* src, size_t n){
+  
+  ensure_init();
+  if(n > OPT_THRESHOLD){
+	 // fprintf(stderr, "moving %p to %p, size %zu\n", src, dest, n);
+  	//return dest;
+  }
+  return libc_memmove(dest, src, n);
+}
+
+
 /******************************************************************************/
 /* Helper functions */
 
@@ -414,7 +510,11 @@ static void init(void)
   libc_writev = bind_symbol("writev");
   libc_select = bind_symbol("select");
   libc_pselect = bind_symbol("pselect");
+  
+  libc_memmove = bind_symbol("memmove");
+  libc_memcpy = bind_symbol("memcpy");
 
+  skiplist_init(&addr_list);
   if (tas_init() != 0) {
     abort();
   }

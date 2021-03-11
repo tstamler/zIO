@@ -5,10 +5,10 @@ SBINDIR ?= $(PREFIX)/sbin
 LIBDIR ?= $(PREFIX)/lib
 INCDIR ?= $(PREFIX)/include
 
-CFLAGS += -std=gnu99 -O3 -g -Wall -Werror -I. -Iinclude/ -march=native -fno-omit-frame-pointer
+CFLAGS += -std=gnu99 -O3 -g -Wall -I. -Iinclude/ -march=native -fno-omit-frame-pointer -fno-common -mno-avx512f #-Werror
 LDFLAGS += -pthread -g
 
-RTE_SDK ?= $(HOME)/dpdk-mlnx/build
+RTE_SDK ?= $(HOME)/dpdk/build
 DPDK_PMDS = mlx5
 EXTRA_LIBS_DPDK = -libverbs -lmlx5 #-lmnl
 
@@ -23,7 +23,7 @@ LIBS_DPDK+= -lrte_eal -lrte_mempool -lrte_mempool_ring \
 	    -lrte_hash -lrte_ring -lrte_kvargs -lrte_ethdev \
 	    -lrte_mbuf -lnuma -lrte_bus_pci -lrte_pci \
 	    -lrte_cmdline -lrte_timer -lrte_net \
-	    -lrte_bus_vdev -lrte_gso -lrte_kni \
+	    -lrte_bus_vdev -lrte_gso -lrte_kni -lrte_telemetry\
 	    -Wl,--no-whole-archive -ldl $(EXTRA_LIBS_DPDK)
 
 LDLIBS += -lm -lpthread -lrt -ldl

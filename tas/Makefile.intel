@@ -5,7 +5,7 @@ SBINDIR ?= $(PREFIX)/sbin
 LIBDIR ?= $(PREFIX)/lib
 INCDIR ?= $(PREFIX)/include
 
-CFLAGS += -std=gnu99 -O3 -g -Wall -Werror -I. -Iinclude/ -march=native -fno-omit-frame-pointer
+CFLAGS += -std=gnu99 -O3 -g -Wall -Werror -Wno-address-of-packed-member -Wdiscarded-qualifiers -I. -Iinclude/ -march=native -fno-omit-frame-pointer
 LDFLAGS += -pthread -g
 
 RTE_SDK ?= $(HOME)/dpdk/build

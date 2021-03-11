@@ -1,4 +1,4 @@
 #! /bin/bash
 
-#taskset -c 0,7 ./run.sh redis-server.mlfs ../redis_mlfs.conf
-#taskset -c 0,7 ./run.sh redis-server.mlfs ../redis_mlfs.conf --slaveof 12.12.12.1 7379
+rm -rf /home/tstamler/stratas/strata/bench/redis-3.2.8/pmem/*
+LD_PRELOAD=/home/tstamler/stratas_dev/tas/lib/libtas_interpose.so ./redis-server ../redis_ext4.conf

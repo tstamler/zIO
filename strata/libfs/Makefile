@@ -45,7 +45,7 @@ LD_FLAGS = -lpthread -lm -L$(NVML_DIR)/nondebug/ -Wl,-rpath=$(abspath $(NVML_DIR
 
 #MLFS_FLAGS = -DUSE_SLAB -DLIBFS -DMLFS_INFO
 #MLFS_FLAGS = -DLIBFS
-MLFS_FLAGS = -DLIBFS -DMLFS_INFO
+MLFS_FLAGS = -DLIBFS -DMLFS_INFO# -DMLFS_DEBUG
 #MLFS_FLAGS += -DCONCURRENT
 MLFS_FLAGS += -DINVALIDATION
 MLFS_FLAGS += -DKLIB_HASH
@@ -65,7 +65,7 @@ vpath %.c $(SRC_DIR)
 
 define make-goal
 $1/%.o: %.c 
-	$(CC) $(INCLUDES) $(MLFS_FLAGS) $(DEBUG) -fPIC -c $$< -o $$@ -DLIBFS
+	$(CC) $(INCLUDES) $(MLFS_FLAGS) $(DEBUG) -fPIC -fcommon -c $$< -o $$@ -DLIBFS
 endef
 
 ########

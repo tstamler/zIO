@@ -62,7 +62,7 @@ CXX = g++ -std=c++11
 
 define make-goal
 $1/%.o: %.c
-	$(CC) $(INCLUDES) $(DEBUG) -fPIC -c $$< -o $$@ -DKERNFS $(MLFS_FLAGS)
+	$(CC) $(INCLUDES) $(DEBUG) -fPIC -fcommon -c $$< -o $$@ -DKERNFS $(MLFS_FLAGS)
 endef
 
 ########

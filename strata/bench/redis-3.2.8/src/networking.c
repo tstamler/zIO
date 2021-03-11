@@ -1315,7 +1315,7 @@ void readQueryFromClient(aeEventLoop *el, int fd, void *privdata, int mask) {
     UNUSED(el);
     UNUSED(mask);
 
-    static int i = 0;
+    //static int i = 0;
     int buf_count;
     readlen = PROTO_IOBUF_LEN;
     /* If this is a multi bulk request, and we are processing a bulk reply
@@ -1336,13 +1336,14 @@ void readQueryFromClient(aeEventLoop *el, int fd, void *privdata, int mask) {
     if (c->querybuf_peak < qblen) c->querybuf_peak = qblen;
     c->querybuf = sdsMakeRoomFor(c->querybuf, readlen);
     
-    if(i == 100000){
-        ioctl(fd, FIONREAD, &buf_count);
-	printf("buffer size %d\n", buf_count);
-	i = 0;
-    }
-    i++;
+    //if(i == 100000){
+      //  ioctl(fd, FIONREAD, &buf_count);
+	//printf("buffer size %d\n", buf_count);
+//	i = 0;
+  //  }
+    //i++;
     nread = rs_read(fd, c->querybuf+qblen, readlen);
+    //fprintf(stderr, "redis read %zu, IOBUF %u\n", nread, readlen);
     if (nread == -1) {
         if (errno == EAGAIN) {
             return;

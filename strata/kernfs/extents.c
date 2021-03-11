@@ -211,9 +211,9 @@ static mlfs_fsblk_t mlfs_new_data_blocks(handle_t *handle,
 
 	*errp = mlfs_ext_alloc_blocks(handle, inode, goal, flags, &block, count);
 	
-	mlfs_debug("[dev %u] used blocks %d\n", inode->dev,
-			bitmap_weight((uint64_t *)inode->i_sb[handle->dev]->s_blk_bitmap->bitmap,
-				inode->i_sb[handle->dev]->ondisk->ndatablocks));
+	//mlfs_debug("[dev %u] used blocks %d\n", inode->dev,
+	//		bitmap_weight((uint64_t *)inode->i_sb[handle->dev]->s_blk_bitmap->bitmap,
+	//			inode->i_sb[handle->dev]->ondisk->ndatablocks));
 
 	return block;
 }
@@ -230,9 +230,9 @@ static mlfs_fsblk_t mlfs_new_meta_blocks(handle_t *handle,
 
 	*errp = mlfs_ext_alloc_blocks(handle, inode, goal, flags, &block, count);
 
-	mlfs_debug("[dev %u] used blocks %d\n", inode->dev,
-			bitmap_weight((uint64_t *)inode->i_sb[handle->dev]->s_blk_bitmap->bitmap,
-				inode->i_sb[handle->dev]->ondisk->ndatablocks));
+	//mlfs_debug("[dev %u] used blocks %d\n", inode->dev,
+	//		bitmap_weight((uint64_t *)inode->i_sb[handle->dev]->s_blk_bitmap->bitmap,
+	//			inode->i_sb[handle->dev]->ondisk->ndatablocks));
 
 	return block;
 }
