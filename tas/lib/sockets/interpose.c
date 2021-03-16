@@ -510,7 +510,8 @@ void* memcpy (void* dest, const void* src, size_t n){
 			abort();
 		}
 
-		if(munmap((void*) (dest_bounded + 4096), n - 4096) < 0){
+		if(mmap((void*)(dest_bounded + 4096), n - 4096, PROT_NONE, MAP_ANONYMOUS, 0, 0) < 0){
+		//if(munmap((void*) (dest_bounded + 4096), n - 4096) < 0){
 			perror("memcpy munmap");
 			abort();
 		}
