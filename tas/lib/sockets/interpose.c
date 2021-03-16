@@ -30,14 +30,36 @@
 #include <dlfcn.h>
 #include <pthread.h>
 #include <sys/select.h>
+#include <sys/syscall.h>
+#include <sys/ioctl.h>
+#include <sys/mman.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <linux/userfaultfd.h>
+#include <assert.h>
+#include <poll.h>
+#include <fcntl.h>
+#include <unistd.h>
 
 #include <utils.h>
 #include <tas_sockets.h>
 #include <skiplist.h>
 
-#define OPT_THRESHOLD -1
-//#define OPT_THRESHOLD 4096
+//#define OPT_THRESHOLD 1000000000
+#define OPT_THRESHOLD 4096
+
 #define PAGE_MASK 0xfffffffff000
+
+#define MAX_UFFD_MSGS 1
+
+#define UFFD_PROTO
+
+#define LOG(...) fprintf(stderr, __VA_ARGS__)
+//#define LOG(str, ...) while(0) {}
+
+long uffd = -1;
+
+pthread_t fault_thread;
 
 static inline void ensure_init(void);
 
@@ -260,9 +282,9 @@ ssize_t read(int sockfd, void *buf, size_t count)
   if ((ret = tas_read(sockfd, buf, count)) == -1 && errno == EBADF) {
     return libc_read(sockfd, buf, count);
   }
-  //fprintf(stderr, "tas read %zu bytes, page mask %lx\n", ret, PAGE_MASK);
+  //LOG("tas read %zu bytes, page mask %lx\n", ret, PAGE_MASK);
   if(ret > OPT_THRESHOLD){
-	 //fprintf(stderr, "reading from network at %p, size %zu, key %lx\n", buf, ret, ((uint64_t) buf) & PAGE_MASK);
+	 LOG( "reading from network at %p, size %zu, key %lx\n", buf, ret, ((uint64_t) buf) & PAGE_MASK);
 	 if(roll_addr[sockfd].last_addr == (uint64_t) buf) {
 	     roll_addr[sockfd].last_addr = (uint64_t) buf + ret;
 	     roll_addr[sockfd].size += ret;
@@ -270,7 +292,7 @@ ssize_t read(int sockfd, void *buf, size_t count)
 	     roll_addr[sockfd].last_addr = (uint64_t) buf + ret;
 	     roll_addr[sockfd].size = ret;
 	 }
-	 skiplist_insert(&addr_list, ((uint64_t) buf) & PAGE_MASK, (uint64_t) roll_addr[sockfd].last_addr - roll_addr[sockfd].size, roll_addr[sockfd].size); 
+	 skiplist_insert(&addr_list, ((uint64_t) buf) & PAGE_MASK, (uint64_t) roll_addr[sockfd].last_addr - roll_addr[sockfd].size, roll_addr[sockfd].size, 0); 
   }
   return ret;
 }
@@ -327,7 +349,7 @@ ssize_t write(int sockfd, const void *buf, size_t count)
     ret = 0;
     if (count > OPT_THRESHOLD) {
 	snode* entry = skiplist_search(&addr_list, ((uint64_t) buf) & PAGE_MASK);
-	//fprintf(stderr, "writing to linux from %p, size %zu, entry %p\n", buf, count, entry);
+	LOG("writing to linux from %p, size %zu, entry %p\n", buf, count, entry);
 	if(entry && entry->len <= count) {
 	    new_len = count - entry->len;
 	    struct addr_encoding* code = ((void*) buf) + new_len;
@@ -339,11 +361,13 @@ ssize_t write(int sockfd, const void *buf, size_t count)
 	    ret = count;
 	}
 	else {
+		LOG("entry %p not found\n", buf);
 		//printf("entry not found\n");
 	}
 	skiplist_delete(&addr_list, ((uint64_t) buf) & PAGE_MASK);
+    	LOG("write len %zu\n", new_len);
     }
-    //printf("write len %zu\n", new_len);
+    //LOG("write len %zu\n", new_len);
     //new_len = sizeof(struct addr_encoding);
     //ret = count;
     ret2 = libc_write(sockfd, buf, new_len);
@@ -441,19 +465,66 @@ void* memcpy (void* dest, const void* src, size_t n){
   
   ensure_init();	
   if(n > OPT_THRESHOLD){
-	//fprintf(stderr, "copying %p to %p, size %zu\n", src, dest, n);
+	LOG( "copying %p-%p to %p-%p, size %zu\n", src, src + n, dest, dest+n, n);
   	//skiplist_dump(&addr_list);
 	snode* entry = skiplist_search(&addr_list, ((uint64_t) src) & PAGE_MASK);
 	//fprintf(stderr, "searching for %lx ret %p\n", ((uint64_t) src) & PAGE_MASK, entry);
 	if(entry) {
 		uint64_t original = entry->orig;
 		uint32_t length = entry->len;
+		uint64_t old_offset = entry->offset;
+
+		uint64_t dest_bounded = ((uint64_t) dest) & PAGE_MASK;
+		uint64_t offset = ((uint64_t) dest) - dest_bounded;
+#ifndef UFFD_PROTO		
 		skiplist_delete(&addr_list, ((uint64_t) src) & PAGE_MASK);
 		//fprintf(stderr, "deleting %lx ret %d\n", ((uint64_t) src) & PAGE_MASK, ret);
-		skiplist_insert(&addr_list, ((uint64_t) dest) & PAGE_MASK, original, length);
+#endif
+		skiplist_insert(&addr_list, dest_bounded, original, length, offset);
 		//fprintf(stderr, "inserting %lx ret %d\n", ((uint64_t) dest) & PAGE_MASK, ret);
 		//skiplist_dump(&addr_list);
-  		//return libc_memcpy(dest, src, 32);
+#ifdef UFFD_PROTO
+
+		if(offset <= old_offset){
+			LOG("copying before buffer: %zu bytes from %p-%p to %p-%p\n", 4096-offset, src, src+(4096-offset), dest, dest+(4096-offset));
+			libc_memcpy(dest, src, 4096-offset);
+		} else {
+			LOG("incomplete buffer: old offset %zu, new offset %zu\n", old_offset, offset);
+			LOG("copying before buffer (1): %zu bytes from %p-%p to %p-%p\n", 4096-offset, src, src+(4096-offset), dest, dest+(4096-offset));
+			libc_memcpy(dest, src, old_offset);
+			LOG("copying before buffer (2): %zu bytes from %p-%p to %p-%p\n", 4096-offset, src, src+(4096-offset), dest, dest+(4096-offset));
+			libc_memcpy(dest + old_offset, original + old_offset, 4096-(offset-old_offset));
+		}
+		LOG("copying after buffer: %zu bytes from %p-%p to %p-%p\n", offset, src + (n-offset), src + n, dest + (n-offset), dest + n);
+		libc_memcpy(dest + (n - offset), original + (n - offset), offset); 
+
+		struct uffdio_register uffdio_register;
+		uffdio_register.range.start = dest_bounded + 4096;
+		uffdio_register.range.len = n - 4096;
+		uffdio_register.mode = UFFDIO_REGISTER_MODE_MISSING;
+	        uffdio_register.ioctls = 0;
+		
+		LOG("uffd registering addr %p-%p, len %zu\n", dest_bounded + 4096, dest_bounded + n, n - 4096);
+	    	if (ioctl(uffd, UFFDIO_REGISTER, &uffdio_register) == -1) {
+			perror("ioctl uffdio_register");
+			abort();
+		}
+
+		if(munmap((void*) (dest_bounded + 4096), n - 4096) < 0){
+			perror("memcpy munmap");
+			abort();
+		}
+
+		LOG("successfully unmapped and registered %p\n", dest_bounded + 4096);
+		//memcpy((dest_bounded+4096), src, 32);
+		return dest;
+#endif
+		
+#ifdef NO_COPY_TEST  		
+		return libc_memcpy(dest, src, 32);
+#endif
+	}else{
+		LOG("appropriate size copy, but can't find in skiplist\n");
 	}
   }
   return libc_memcpy(dest, src, n);
@@ -463,7 +534,7 @@ void* memmove (void* dest, const void* src, size_t n){
   
   ensure_init();
   if(n > OPT_THRESHOLD){
-	 // fprintf(stderr, "moving %p to %p, size %zu\n", src, dest, n);
+	LOG("moving %p to %p, size %zu\n", src, dest, n);
   	//return dest;
   }
   return libc_memmove(dest, src, n);
@@ -481,6 +552,159 @@ static void *bind_symbol(const char *sym)
     abort();
   }
   return ptr;
+}
+
+void handle_missing_fault(uint64_t page_boundary, uint32_t fault_flags)
+{
+	snode* entry;
+        int i = 0;
+	uint64_t base_addr;
+
+	LOG("handling fault at %p\n", page_boundary);
+	for(i = 0; i<10; i++){
+		base_addr = page_boundary - i*4096;
+		entry = skiplist_search(&addr_list, base_addr);
+		break;
+	}
+	LOG("found entry at %p\n", base_addr);
+	
+	if(entry == NULL){
+	  perror("page fault can't find skiplist entry, aborting\n");
+	  abort();
+	}
+	
+	uint64_t original = entry->orig;
+	uint32_t length = entry->len;
+	uint64_t offset = entry->offset;
+	void* newptr;
+
+	newptr = mmap((void*)(base_addr + 4096), length - 4096, PROT_READ | PROT_WRITE, MAP_POPULATE | MAP_ANONYMOUS, 0, 0);
+    	if (newptr == MAP_FAILED) {
+	    perror("newptr mmap");
+	    assert(0);
+	}
+      
+        if (((uint64_t) newptr) != base_addr) {
+	    fprintf(stderr, "hemem: mmap populate: warning, newptr != page boundry\n");
+	}
+	
+	libc_memcpy((void*) (base_addr + 4096), (void*) (original + (4096 - offset)), length - 4096);
+	assert(page_boundary);
+
+	skiplist_delete(&addr_list, base_addr);
+}
+
+void *handle_fault()
+{
+  static struct uffd_msg msg[MAX_UFFD_MSGS];
+  ssize_t nread;
+  uint64_t fault_addr;
+  uint64_t fault_flags;
+  uint64_t page_boundry;
+  struct uffdio_range range;
+  int ret;
+  int nmsgs;
+  int i;
+
+  //cpu_set_t cpuset;
+  //pthread_t thread;
+  //thread = pthread_self();
+				  
+  //CPU_ZERO(&cpuset);
+				    
+  //CPU_SET(FAULT_THREAD_CPU, &cpuset);
+				      
+  //int s = pthread_setaffinity_np(thread, sizeof(cpu_set_t), &cpuset);
+				        
+  //if (s != 0) {
+	//  perror("pthread_setaffinity_np");
+	//  assert(0);
+  //}
+
+  for (;;) {
+	  struct pollfd pollfd;
+	  int pollres;
+	  pollfd.fd = uffd;
+	  pollfd.events = POLLIN;
+
+	  pollres = poll(&pollfd, 1, -1);
+
+	  switch (pollres) {
+		  case -1:
+			  perror("poll");
+			  assert(0);
+		  case 0:
+			  fprintf(stderr, "poll read 0\n");
+			  continue;
+		  case 1:
+			  break;
+		  default:
+			  fprintf(stderr, "unexpected poll result\n");
+			  assert(0);
+	  }
+	  
+	  if (pollfd.revents & POLLERR) {
+		  fprintf(stderr, "pollerr\n");
+		  assert(0);
+	  }
+	  
+	  if (!pollfd.revents & POLLIN) {
+		  continue;
+	  }
+
+	  nread = read(uffd, &msg[0], MAX_UFFD_MSGS * sizeof(struct uffd_msg));
+	  if (nread == 0) {
+		  fprintf(stderr, "EOF on userfaultfd\n");
+		  assert(0);
+	  }	
+	  if (nread < 0) {
+		  if (errno == EAGAIN) {
+			  continue;
+		  }
+		  perror("read");
+		  assert(0);
+	  }
+
+
+	  if ((nread % sizeof(struct uffd_msg)) != 0) {
+		  fprintf(stderr, "invalid msg size: [%ld]\n", nread);
+		  assert(0);
+	  }
+
+	  nmsgs = nread / sizeof(struct uffd_msg);
+	  for (i = 0; i < nmsgs; i++) {		
+	  	if (msg[i].event & UFFD_EVENT_PAGEFAULT) {
+			fault_addr = (uint64_t)msg[i].arg.pagefault.address;
+			fault_flags = msg[i].arg.pagefault.flags;
+
+			page_boundry = fault_addr & ~(4096 - 1);
+
+			handle_missing_fault(page_boundry, fault_flags);
+
+		        range.start = (uint64_t)page_boundry;
+		        range.len = 4096;
+
+		        ret = ioctl(uffd, UFFDIO_WAKE, &range);
+
+		        if (ret < 0) {
+		 	    perror("uffdio wake");
+		            assert(0);
+			}
+		}			     
+		else if (msg[i].event & UFFD_EVENT_UNMAP){
+		        fprintf(stderr, "Received an unmap event\n");
+		        assert(0);
+		}
+		else if (msg[i].event & UFFD_EVENT_REMOVE) {
+		        fprintf(stderr, "received a remove event\n");
+		        assert(0);
+		}
+		else {
+		        fprintf(stderr, "received a non page fault event\n");
+		        assert(0);
+		}
+	  }
+     }
 }
 
 static void init(void)
@@ -514,11 +738,38 @@ static void init(void)
   libc_memmove = bind_symbol("memmove");
   libc_memcpy = bind_symbol("memcpy");
 
+  //new tracking code
   skiplist_init(&addr_list);
+
+#ifdef UFFD_PROTO
+  uffd = syscall(__NR_userfaultfd, O_CLOEXEC | O_NONBLOCK);
+  if (uffd == -1) {
+      perror("uffd");
+      abort();
+  }
+
+  struct uffdio_api uffdio_api;
+  uffdio_api.api = UFFD_API;
+  uffdio_api.features = 0; //UFFD_FEATURE_PAGEFAULT_FLAG_WP |  UFFD_FEATURE_MISSING_SHMEM | UFFD_FEATURE_MISSING_HUGETLBFS;// | UFFD_FEATURE_EVENT_UNMAP | UFFD_FEATURE_EVENT_REMOVE;
+  uffdio_api.ioctls = 0;
+  if (ioctl(uffd, UFFDIO_API, &uffdio_api) == -1) {
+      perror("ioctl uffdio_api");
+      abort();
+  }
+
+  if (pthread_create(&fault_thread, NULL, handle_fault, 0) != 0){
+      perror("fault thread create");
+      abort();
+  }
+
+  LOG("uffd initialized\n");
+#endif
+
   if (tas_init() != 0) {
     abort();
   }
 }
+
 
 static inline void ensure_init(void)
 {
