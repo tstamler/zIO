@@ -8,6 +8,7 @@
 typedef struct snode {
     uint64_t lookup;
     uint64_t orig;
+    uint64_t offset;
     uint32_t len;
     struct snode **forward;
 } snode;
@@ -42,7 +43,7 @@ static inline int rand_level() {
     return level;
 }
  
-static inline int skiplist_insert(skiplist *list, uint64_t lookup, uint64_t orig, uint32_t len) {
+static inline int skiplist_insert(skiplist *list, uint64_t lookup, uint64_t orig, uint32_t len, uint64_t offset) {
     snode *update[SKIPLIST_MAX_LEVEL + 1];
     snode *x = list->header;
     int i, level;
@@ -56,6 +57,7 @@ static inline int skiplist_insert(skiplist *list, uint64_t lookup, uint64_t orig
     if (lookup == x->lookup) {
         x->orig = orig;
 	x->len = len;
+	x->offset = offset;
         return 0;
     } else {
         level = rand_level();
@@ -70,6 +72,7 @@ static inline int skiplist_insert(skiplist *list, uint64_t lookup, uint64_t orig
         x->lookup = lookup;
         x->orig = orig;
 	x->len = len;
+	x->offset = offset;
         x->forward = (snode **) malloc(sizeof(snode*) * (level + 1));
         for (i = 1; i <= level; i++) {
             x->forward[i] = update[i]->forward[i];

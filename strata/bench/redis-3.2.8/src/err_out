@@ -1,0 +1,1126 @@
+uffd initialized
+sizeable, but not large enough move from 0x55dc8b6c8c00 to 0x7eff0de01000 of size 4096
+sizeable, but not large enough move from 0x55dc8b6c8c00 to 0x7efe8dc01000 of size 4096
+sizeable, but not large enough copy from 0x7f014ba16a00 to 0x7f014ba45000 of size 1280
+sizeable, but not large enough copy from 0x7f014ba4f000 to 0x7f014ba16a00 of size 2560
+sizeable, but not large enough copy from 0x7f014ba5e000 to 0x7f014ba4f000 of size 5120
+copying 0x7f014ba5e000-0x7f014ba60800 to 0x7f014ba772c0-0x7f014ba79ac0, size 10240
+appropriate size copy, but can't find 0x7f014ba5e000 in skiplist
+copying 0x7f014ba772c5-0x7f014ba80f37 to 0x7f014ba829c9-0x7f014ba8c63b, size 40050
+appropriate size copy, but can't find 0x7f014ba77000 in skiplist
+sizeable, but not large enough copy from 0x7f014ba16a00 to 0x7f014ba45000 of size 1280
+sizeable, but not large enough copy from 0x7f014ba4f000 to 0x7f014ba16a00 of size 2560
+sizeable, but not large enough copy from 0x7f014ba5e000 to 0x7f014ba4f000 of size 5120
+sizeable, but not large enough move from 0x7f014ba10790 to 0x7f014ba10590 of size 1048
+sizeable, but not large enough move from 0x55dc8c488df0 to 0x7eff0ea74000 of size 4096
+sizeable, but not large enough move from 0x55dc8c48cdb0 to 0x7eff0ea75000 of size 4096
+tas read 77 bytes, page mask 7f014bb57000
+tas read 0 bytes, page mask 7f014bb57000
+sizeable, but not large enough copy from 0x7f014bb86e85 to 0x7f0150650000 of size 7240
+tas read 7240 bytes, page mask 7f014bb86000
+sizeable, but not large enough move from 0x7f014bb86e85 to 0x7f014bb86eb7 of size 7190
+sizeable, but not large enough copy from 0x7f014bb91fc9 to 0x7f014bb86e85 of size 7191
+copying 0x7f0150651c48-0x7f01506543e0 to 0x7f014bb93bdf-0x7f014bb96377, size 10136
+appropriate size copy, but can't find 0x7f0150651000 in skiplist
+tas read 10136 bytes, page mask 7f014bb93000
+reading from network at 0x7f014bb93bdf, size 10136, key 7f014bb93000, original 0x7f0150651c48
+old roll_addr (nil), prev_addr 0x7f014bb86e85, prev_len 7240
+not rolling
+small addr not found: prev 0x7f014bb88acd, current 0x7f014bb93bdf
+new roll_addr 0x7f014bb96377, size 10136, original 0x7f0150651c48 inserting at 0x7f014bb93000
+sizeable, but not large enough copy from 0x7f014bb86e45 to 0x7f0150e20000 of size 5792
+tas read 5792 bytes, page mask 7f014bb86000
+sizeable, but not large enough move from 0x7f014bb86e45 to 0x7f014bb86e77 of size 5742
+sizeable, but not large enough copy from 0x7f014bbba809 to 0x7f014bb86e45 of size 5743
+copying 0x7f01506543e0-0x7f01506576c8 to 0x7f014bb96377-0x7f014bb9965f, size 13032
+appropriate size copy, but can't find 0x7f0150654000 in skiplist
+tas read 13032 bytes, page mask 7f014bb96000
+reading from network at 0x7f014bb96377, size 13032, key 7f014bb96000, original 0x7f01506543e0
+old roll_addr 0x7f014bb96377, prev_addr 0x7f014bb86e45, prev_len 5792
+rolling, old original 0x7f0150651c48 new original 0x7f01506543e0
+small addr not found: prev 0x7f014bb884e5, current 0x7f014bb96377
+new roll_addr 0x7f014bb9965f, size 23168, original 0x7f01506543e0 inserting at 0x7f014bb93000
+copying 0x7f0150e216a0-0x7f0150e256a0 to 0x7f014bbbbe77-0x7f014bbbfe77, size 16384
+appropriate size copy, but can't find 0x7f0150e21000 in skiplist
+tas read 16384 bytes, page mask 7f014bbbb000
+reading from network at 0x7f014bbbbe77, size 16384, key 7f014bbbb000, original 0x7f0150e216a0
+old roll_addr (nil), prev_addr 0x7f014bb96377, prev_len 13032
+not rolling
+small addr not found: prev 0x7f014bb9965f, current 0x7f014bbbbe77
+new roll_addr 0x7f014bbbfe77, size 16384, original 0x7f0150e216a0 inserting at 0x7f014bbbb000
+copying 0x7f01506576c8-0x7f015065b6c8 to 0x7f014bb9965f-0x7f014bb9d65f, size 16384
+appropriate size copy, but can't find 0x7f0150657000 in skiplist
+tas read 16384 bytes, page mask 7f014bb99000
+reading from network at 0x7f014bb9965f, size 16384, key 7f014bb99000, original 0x7f01506576c8
+old roll_addr 0x7f014bb9965f, prev_addr 0x7f014bbbbe77, prev_len 16384
+rolling, old original 0x7f0150651c48 new original 0x7f01506576c8
+small addr not found: prev 0x7f014bbbfe77, current 0x7f014bb9965f
+new roll_addr 0x7f014bb9d65f, size 39552, original 0x7f01506576c8 inserting at 0x7f014bb93000
+copying 0x7f0150e256a0-0x7f0150e296a0 to 0x7f014bbbfe77-0x7f014bbc3e77, size 16384
+appropriate size copy, but can't find 0x7f0150e25000 in skiplist
+tas read 16384 bytes, page mask 7f014bbbf000
+reading from network at 0x7f014bbbfe77, size 16384, key 7f014bbbf000, original 0x7f0150e256a0
+old roll_addr 0x7f014bbbfe77, prev_addr 0x7f014bb9965f, prev_len 16384
+rolling, old original 0x7f0150e216a0 new original 0x7f0150e256a0
+small addr not found: prev 0x7f014bb9d65f, current 0x7f014bbbfe77
+new roll_addr 0x7f014bbc3e77, size 32768, original 0x7f0150e256a0 inserting at 0x7f014bbbb000
+copying 0x7f01515f0000-0x7f01515f2d40 to 0x7f014bb86305-0x7f014bb89045, size 11584
+appropriate size copy, but can't find 0x7f01515f0000 in skiplist
+tas read 11584 bytes, page mask 7f014bb86000
+reading from network at 0x7f014bb86305, size 11584, key 7f014bb86000, original 0x7f01515f0000
+old roll_addr (nil), prev_addr 0x7f014bbbfe77, prev_len 16384
+not rolling
+small addr not found: prev 0x7f014bbc3e77, current 0x7f014bb86305
+new roll_addr 0x7f014bb89045, size 11584, original 0x7f01515f0000 inserting at 0x7f014bb86000
+moving 0x7f014bb86337 to 0x7f014bb86305, size 11534
+copying 0x7f014bb86305-0x7f014bb89014 to 0x7f014a60d109-0x7f014a60fe18, size 11535
+uffd unregistering addr 0x7f014bb87000-0x7f014bb88000, len 4096
+complete buffer: old offset 0, new offset 265
+copying before buffer: 3831 bytes from 0x7f014bb86305-0x7f014bb871fc to 0x7f014a60d109-0x7f014a60e000
+mmaping for uffd at 0x7f014a60e000, length 4096
+uffd registering addr 0x7f014a60e000-0x7f014a60f000, len 4096
+successfully mapped and registered 0x7f014a60e000
+inserting original 0x7f01515f0000 at location 0x7f014a60d000
+copying 0x7f0151dc0000-0x7f0151dc2d40 to 0x7f014bb86045-0x7f014bb88d85, size 11584
+appropriate size copy, but can't find 0x7f0151dc0000 in skiplist
+tas read 11584 bytes, page mask 7f014bb86000
+reading from network at 0x7f014bb86045, size 11584, key 7f014bb86000, original 0x7f0151dc0000
+old roll_addr (nil), prev_addr 0x7f014bb86305, prev_len 11584
+not rolling
+small addr not found: prev 0x7f014bb89045, current 0x7f014bb86045
+new roll_addr 0x7f014bb88d85, size 11584, original 0x7f0151dc0000 inserting at 0x7f014bb86000
+moving 0x7f014bb86077 to 0x7f014bb86045, size 11534
+copying 0x7f014bb86045-0x7f014bb88d54 to 0x7f014a636209-0x7f014a638f18, size 11535
+uffd unregistering addr 0x7f014bb87000-0x7f014bb88000, len 4096
+complete buffer: old offset 0, new offset 521
+copying before buffer: 3575 bytes from 0x7f014bb86045-0x7f014bb86e3c to 0x7f014a636209-0x7f014a637000
+mmaping for uffd at 0x7f014a637000, length 4096
+uffd registering addr 0x7f014a637000-0x7f014a638000, len 4096
+successfully mapped and registered 0x7f014a637000
+inserting original 0x7f0151dc0000 at location 0x7f014a636000
+copying 0x7f015065b6c8-0x7f015065f6c8 to 0x7f014bb9d65f-0x7f014bba165f, size 16384
+appropriate size copy, but can't find 0x7f015065b000 in skiplist
+tas read 16384 bytes, page mask 7f014bb9d000
+reading from network at 0x7f014bb9d65f, size 16384, key 7f014bb9d000, original 0x7f015065b6c8
+old roll_addr 0x7f014bb9d65f, prev_addr 0x7f014bb86045, prev_len 11584
+rolling, old original 0x7f0150651c48 new original 0x7f015065b6c8
+small addr not found: prev 0x7f014bb88d85, current 0x7f014bb9d65f
+new roll_addr 0x7f014bba165f, size 55936, original 0x7f015065b6c8 inserting at 0x7f014bb93000
+copying 0x7f0150e296a0-0x7f0150e2d6a0 to 0x7f014bbc3e77-0x7f014bbc7e77, size 16384
+appropriate size copy, but can't find 0x7f0150e29000 in skiplist
+tas read 16384 bytes, page mask 7f014bbc3000
+reading from network at 0x7f014bbc3e77, size 16384, key 7f014bbc3000, original 0x7f0150e296a0
+old roll_addr 0x7f014bbc3e77, prev_addr 0x7f014bb9d65f, prev_len 16384
+rolling, old original 0x7f0150e216a0 new original 0x7f0150e296a0
+small addr not found: prev 0x7f014bba165f, current 0x7f014bbc3e77
+new roll_addr 0x7f014bbc7e77, size 49152, original 0x7f0150e296a0 inserting at 0x7f014bbbb000
+copying 0x7f01515f2d40-0x7f01515f6d40 to 0x7f014a60fe17-0x7f014a613e17, size 16384
+appropriate size copy, but can't find 0x7f01515f2000 in skiplist
+tas read 16384 bytes, page mask 7f014a60f000
+reading from network at 0x7f014a60fe17, size 16384, key 7f014a60f000, original 0x7f01515f2d40
+old roll_addr 0x7f014bb89045, prev_addr 0x7f014bbc3e77, prev_len 16384
+not rolling
+small addr not found: prev 0x7f014bbc7e77, current 0x7f014a60fe17
+new roll_addr 0x7f014a613e17, size 16384, original 0x7f01515f2d40 inserting at 0x7f014a60f000
+copying 0x7f0151dc2d40-0x7f0151dc6d40 to 0x7f014a638f17-0x7f014a63cf17, size 16384
+appropriate size copy, but can't find 0x7f0151dc2000 in skiplist
+tas read 16384 bytes, page mask 7f014a638000
+reading from network at 0x7f014a638f17, size 16384, key 7f014a638000, original 0x7f0151dc2d40
+old roll_addr 0x7f014bb88d85, prev_addr 0x7f014a60fe17, prev_len 16384
+not rolling
+small addr not found: prev 0x7f014a613e17, current 0x7f014a638f17
+new roll_addr 0x7f014a63cf17, size 16384, original 0x7f0151dc2d40 inserting at 0x7f014a638000
+copying 0x7f0152590000-0x7f0152594000 to 0x7f014bb86d85-0x7f014bb8ad85, size 16384
+appropriate size copy, but can't find 0x7f0152590000 in skiplist
+tas read 16384 bytes, page mask 7f014bb86000
+reading from network at 0x7f014bb86d85, size 16384, key 7f014bb86000, original 0x7f0152590000
+old roll_addr (nil), prev_addr 0x7f014a638f17, prev_len 16384
+not rolling
+small addr not found: prev 0x7f014a63cf17, current 0x7f014bb86d85
+new roll_addr 0x7f014bb8ad85, size 16384, original 0x7f0152590000 inserting at 0x7f014bb86000
+moving 0x7f014bb86db7 to 0x7f014bb86d85, size 16334
+copying 0x7f014bb86d85-0x7f014bb8ad54 to 0x7f014a65fb49-0x7f014a663b18, size 16335
+uffd unregistering addr 0x7f014bb87000-0x7f014bb89000, len 8192
+complete buffer: old offset 0, new offset 2889
+copying before buffer: 1207 bytes from 0x7f014bb86d85-0x7f014bb8723c to 0x7f014a65fb49-0x7f014a660000
+copying after buffer: 2889 bytes from 0x7f0152593486-0x7f0152593fcf to 0x7f014a662fcf-0x7f014a663b18
+mmaping for uffd at 0x7f014a660000, length 8192
+uffd registering addr 0x7f014a660000-0x7f014a662000, len 8192
+successfully mapped and registered 0x7f014a660000
+inserting original 0x7f0152590000 at location 0x7f014a65f000
+sizeable, but not large enough copy from 0x7f014bba165f to 0x7f015065f6c8 of size 2412
+tas read 2412 bytes, page mask 7f014bba1000
+copying 0x7f014bb91fc9-0x7f014bba1fc9 to 0x7f014a688c52-0x7f014a698c52, size 65536
+appropriate size copy, but can't find 0x7f014bb91000 in skiplist
+copying 0x7f014a688c09-0x7f014a698c54 to 0x7f014a6b1049-0x7f014a6c1094, size 65611
+appropriate size copy, but can't find 0x7f014a688000 in skiplist
+copying 0x7f0150e2d6a0-0x7f0150e30034 to 0x7f014bbc7e77-0x7f014bbca80b, size 10644
+appropriate size copy, but can't find 0x7f0150e2d000 in skiplist
+tas read 10644 bytes, page mask 7f014bbc7000
+reading from network at 0x7f014bbc7e77, size 10644, key 7f014bbc7000, original 0x7f0150e2d6a0
+old roll_addr 0x7f014bbc7e77, prev_addr 0x7f014bba165f, prev_len 2412
+rolling, old original 0x7f0150e216a0 new original 0x7f0150e2d6a0
+small addr not found: prev 0x7f014bba1fcb, current 0x7f014bbc7e77
+new roll_addr 0x7f014bbca80b, size 59796, original 0x7f0150e2d6a0 inserting at 0x7f014bbbb000
+copying 0x7f014bbba809-0x7f014bbca809 to 0x7f014bb86b7b-0x7f014bb96b7b, size 65536
+appropriate size copy, but can't find 0x7f014bbba000 in skiplist
+copying 0x7f014bb86b49-0x7f014bb96b7d to 0x7f014a6c1094-0x7f014a6d10c8, size 65588
+appropriate size copy, but can't find 0x7f014bb86000 in skiplist
+copying 0x7f01515f6d40-0x7f01515fad40 to 0x7f014a613e17-0x7f014a617e17, size 16384
+appropriate size copy, but can't find 0x7f01515f6000 in skiplist
+tas read 16384 bytes, page mask 7f014a613000
+reading from network at 0x7f014a613e17, size 16384, key 7f014a613000, original 0x7f01515f6d40
+old roll_addr 0x7f014a613e17, prev_addr 0x7f014bbc7e77, prev_len 10644
+rolling, old original 0x7f01515f2d40 new original 0x7f01515f6d40
+small addr not found: prev 0x7f014bbca80b, current 0x7f014a613e17
+new roll_addr 0x7f014a617e17, size 32768, original 0x7f01515f6d40 inserting at 0x7f014a60f000
+copying 0x7f0151dc6d40-0x7f0151dcad40 to 0x7f014a63cf17-0x7f014a640f17, size 16384
+appropriate size copy, but can't find 0x7f0151dc6000 in skiplist
+tas read 16384 bytes, page mask 7f014a63c000
+reading from network at 0x7f014a63cf17, size 16384, key 7f014a63c000, original 0x7f0151dc6d40
+old roll_addr 0x7f014a63cf17, prev_addr 0x7f014a613e17, prev_len 16384
+rolling, old original 0x7f0151dc2d40 new original 0x7f0151dc6d40
+small addr not found: prev 0x7f014a617e17, current 0x7f014a63cf17
+new roll_addr 0x7f014a640f17, size 32768, original 0x7f0151dc6d40 inserting at 0x7f014a638000
+copying 0x7f0152594000-0x7f0152598000 to 0x7f014a663b17-0x7f014a667b17, size 16384
+appropriate size copy, but can't find 0x7f0152594000 in skiplist
+tas read 16384 bytes, page mask 7f014a663000
+reading from network at 0x7f014a663b17, size 16384, key 7f014a663000, original 0x7f0152594000
+old roll_addr 0x7f014bb8ad85, prev_addr 0x7f014a63cf17, prev_len 16384
+not rolling
+small addr not found: prev 0x7f014a640f17, current 0x7f014a663b17
+new roll_addr 0x7f014a667b17, size 16384, original 0x7f0152594000 inserting at 0x7f014a663000
+copying 0x7f0153530000-0x7f0153534000 to 0x7f014bbcf5c5-0x7f014bbd35c5, size 16384
+appropriate size copy, but can't find 0x7f0153530000 in skiplist
+tas read 16384 bytes, page mask 7f014bbcf000
+reading from network at 0x7f014bbcf5c5, size 16384, key 7f014bbcf000, original 0x7f0153530000
+old roll_addr (nil), prev_addr 0x7f014a663b17, prev_len 16384
+not rolling
+small addr not found: prev 0x7f014a667b17, current 0x7f014bbcf5c5
+new roll_addr 0x7f014bbd35c5, size 16384, original 0x7f0153530000 inserting at 0x7f014bbcf000
+moving 0x7f014bbcf5f7 to 0x7f014bbcf5c5, size 16334
+copying 0x7f014bbcf5c5-0x7f014bbd3594 to 0x7f014bb868c9-0x7f014bb8a898, size 16335
+uffd unregistering addr 0x7f014bbd0000-0x7f014bbd2000, len 8192
+complete buffer: old offset 0, new offset 2249
+copying before buffer: 1847 bytes from 0x7f014bbcf5c5-0x7f014bbcfcfc to 0x7f014bb868c9-0x7f014bb87000
+copying after buffer: 2249 bytes from 0x7f0153533706-0x7f0153533fcf to 0x7f014bb89fcf-0x7f014bb8a898
+mmaping for uffd at 0x7f014bb87000, length 8192
+uffd registering addr 0x7f014bb87000-0x7f014bb89000, len 8192
+successfully mapped and registered 0x7f014bb87000
+inserting original 0x7f0153530000 at location 0x7f014bb86000
+copying 0x7f0152d60000-0x7f0152d64000 to 0x7f014bbaf585-0x7f014bbb3585, size 16384
+appropriate size copy, but can't find 0x7f0152d60000 in skiplist
+tas read 16384 bytes, page mask 7f014bbaf000
+reading from network at 0x7f014bbaf585, size 16384, key 7f014bbaf000, original 0x7f0152d60000
+old roll_addr (nil), prev_addr 0x7f014bbcf5c5, prev_len 16384
+not rolling
+small addr not found: prev 0x7f014bbd35c5, current 0x7f014bbaf585
+new roll_addr 0x7f014bbb3585, size 16384, original 0x7f0152d60000 inserting at 0x7f014bbaf000
+moving 0x7f014bbaf5b7 to 0x7f014bbaf585, size 16334
+copying 0x7f014bbaf585-0x7f014bbb3554 to 0x7f014a6dadc9-0x7f014a6ded98, size 16335
+uffd unregistering addr 0x7f014bbb0000-0x7f014bbb2000, len 8192
+complete buffer: old offset 0, new offset 3529
+copying before buffer: 567 bytes from 0x7f014bbaf585-0x7f014bbaf7bc to 0x7f014a6dadc9-0x7f014a6db000
+copying after buffer: 3529 bytes from 0x7f0152d63206-0x7f0152d63fcf to 0x7f014a6ddfcf-0x7f014a6ded98
+mmaping for uffd at 0x7f014a6db000, length 8192
+uffd registering addr 0x7f014a6db000-0x7f014a6dd000, len 8192
+successfully mapped and registered 0x7f014a6db000
+inserting original 0x7f0152d60000 at location 0x7f014a6da000
+copying 0x7f0153d00000-0x7f0153d02d40 to 0x7f014bbafd45-0x7f014bbb2a85, size 11584
+appropriate size copy, but can't find 0x7f0153d00000 in skiplist
+tas read 11584 bytes, page mask 7f014bbaf000
+reading from network at 0x7f014bbafd45, size 11584, key 7f014bbaf000, original 0x7f0153d00000
+old roll_addr (nil), prev_addr 0x7f014bbaf585, prev_len 16384
+not rolling
+small addr not found: prev 0x7f014bbb3585, current 0x7f014bbafd45
+new roll_addr 0x7f014bbb2a85, size 11584, original 0x7f0153d00000 inserting at 0x7f014bbaf000
+moving 0x7f014bbafd77 to 0x7f014bbafd45, size 11534
+copying 0x7f014bbafd45-0x7f014bbb2a54 to 0x7f014a703b49-0x7f014a706858, size 11535
+uffd unregistering addr 0x7f014bbb0000-0x7f014bbb1000, len 4096
+complete buffer: old offset 0, new offset 2889
+copying before buffer: 1207 bytes from 0x7f014bbafd45-0x7f014bbb01fc to 0x7f014a703b49-0x7f014a704000
+mmaping for uffd at 0x7f014a704000, length 4096
+uffd registering addr 0x7f014a704000-0x7f014a705000, len 4096
+successfully mapped and registered 0x7f014a704000
+inserting original 0x7f0153d00000 at location 0x7f014a703000
+writing to linux from 0x7f014a6b1049, bounded 0x7f014a6b1000, size 131199, entry (nil)
+entry 0x7f014a6b1049 not found
+write len 131199
+copying 0x7f01515fad40-0x7f01515fed40 to 0x7f014a617e17-0x7f014a61be17, size 16384
+appropriate size copy, but can't find 0x7f01515fa000 in skiplist
+tas read 16384 bytes, page mask 7f014a617000
+reading from network at 0x7f014a617e17, size 16384, key 7f014a617000, original 0x7f01515fad40
+old roll_addr 0x7f014a617e17, prev_addr 0x7f014bbafd45, prev_len 11584
+rolling, old original 0x7f01515f2d40 new original 0x7f01515fad40
+small addr not found: prev 0x7f014bbb2a85, current 0x7f014a617e17
+new roll_addr 0x7f014a61be17, size 49152, original 0x7f01515fad40 inserting at 0x7f014a60f000
+copying 0x7f0151dcad40-0x7f0151dced40 to 0x7f014a640f17-0x7f014a644f17, size 16384
+appropriate size copy, but can't find 0x7f0151dca000 in skiplist
+tas read 16384 bytes, page mask 7f014a640000
+reading from network at 0x7f014a640f17, size 16384, key 7f014a640000, original 0x7f0151dcad40
+old roll_addr 0x7f014a640f17, prev_addr 0x7f014a617e17, prev_len 16384
+rolling, old original 0x7f0151dc2d40 new original 0x7f0151dcad40
+small addr not found: prev 0x7f014a61be17, current 0x7f014a640f17
+new roll_addr 0x7f014a644f17, size 49152, original 0x7f0151dcad40 inserting at 0x7f014a638000
+copying 0x7f0152598000-0x7f015259c000 to 0x7f014a667b17-0x7f014a66bb17, size 16384
+appropriate size copy, but can't find 0x7f0152598000 in skiplist
+tas read 16384 bytes, page mask 7f014a667000
+reading from network at 0x7f014a667b17, size 16384, key 7f014a667000, original 0x7f0152598000
+old roll_addr 0x7f014a667b17, prev_addr 0x7f014a640f17, prev_len 16384
+rolling, old original 0x7f0152594000 new original 0x7f0152598000
+small addr not found: prev 0x7f014a644f17, current 0x7f014a667b17
+new roll_addr 0x7f014a66bb17, size 32768, original 0x7f0152598000 inserting at 0x7f014a663000
+copying 0x7f0153534000-0x7f0153538000 to 0x7f014bb8a897-0x7f014bb8e897, size 16384
+appropriate size copy, but can't find 0x7f0153534000 in skiplist
+tas read 16384 bytes, page mask 7f014bb8a000
+reading from network at 0x7f014bb8a897, size 16384, key 7f014bb8a000, original 0x7f0153534000
+old roll_addr 0x7f014bbd35c5, prev_addr 0x7f014a667b17, prev_len 16384
+not rolling
+small addr not found: prev 0x7f014a66bb17, current 0x7f014bb8a897
+new roll_addr 0x7f014bb8e897, size 16384, original 0x7f0153534000 inserting at 0x7f014bb8a000
+copying 0x7f0152d64000-0x7f0152d68000 to 0x7f014a6ded97-0x7f014a6e2d97, size 16384
+appropriate size copy, but can't find 0x7f0152d64000 in skiplist
+tas read 16384 bytes, page mask 7f014a6de000
+reading from network at 0x7f014a6ded97, size 16384, key 7f014a6de000, original 0x7f0152d64000
+old roll_addr 0x7f014bbb3585, prev_addr 0x7f014bb8a897, prev_len 16384
+not rolling
+small addr not found: prev 0x7f014bb8e897, current 0x7f014a6ded97
+new roll_addr 0x7f014a6e2d97, size 16384, original 0x7f0152d64000 inserting at 0x7f014a6de000
+copying 0x7f0153d02d40-0x7f0153d06d40 to 0x7f014a706857-0x7f014a70a857, size 16384
+appropriate size copy, but can't find 0x7f0153d02000 in skiplist
+tas read 16384 bytes, page mask 7f014a706000
+reading from network at 0x7f014a706857, size 16384, key 7f014a706000, original 0x7f0153d02d40
+old roll_addr 0x7f014bbb2a85, prev_addr 0x7f014a6ded97, prev_len 16384
+not rolling
+small addr not found: prev 0x7f014a6e2d97, current 0x7f014a706857
+new roll_addr 0x7f014a70a857, size 16384, original 0x7f0153d02d40 inserting at 0x7f014a706000
+sizeable, but not large enough copy from 0x7f014a61be17 to 0x7f01515fed40 of size 4852
+tas read 4852 bytes, page mask 7f014a61b000
+copying 0x7f014a60d109-0x7f014a61d109 to 0x7f014bbafc3b-0x7f014bbbfc3b, size 65536
+uffd unregistering addr 0x7f014a60e000-0x7f014a61d000, len 61440
+complete buffer: old offset 265, new offset 3131
+copying before buffer: 965 bytes from 0x7f014a60d109-0x7f014a60d4ce to 0x7f014bbafc3b-0x7f014bbb0000
+copying after buffer: 3131 bytes from 0x7f01515ff3c5-0x7f0151600000 to 0x7f014bbbf000-0x7f014bbbfc3b
+mmaping for uffd at 0x7f014bbb0000, length 61440
+uffd registering addr 0x7f014bbb0000-0x7f014bbbf000, len 61440
+successfully mapped and registered 0x7f014bbb0000
+inserting original 0x7f01515f0000 at location 0x7f014bbaf000
+copying 0x7f014bbafc09-0x7f014bbbfc3d to 0x7f014a72cf09-0x7f014a73cf3d, size 65588
+uffd unregistering addr 0x7f014bbb0000-0x7f014bbbf000, len 61440
+complete buffer: old offset 3131, new offset 3849
+copying before buffer: 247 bytes from 0x7f014bbafc09-0x7f014bbafd00 to 0x7f014a72cf09-0x7f014a72d000
+copying after buffer: 3849 bytes from 0x7f01515ff12b-0x7f0151600034 to 0x7f014a73c034-0x7f014a73cf3d
+mmaping for uffd at 0x7f014a72d000, length 61440
+uffd registering addr 0x7f014a72d000-0x7f014a73c000, len 61440
+successfully mapped and registered 0x7f014a72d000
+inserting original 0x7f01515f0000 at location 0x7f014a72c000
+sizeable, but not large enough copy from 0x7f014a644f17 to 0x7f0151dced40 of size 4852
+tas read 4852 bytes, page mask 7f014a644000
+copying 0x7f014a636209-0x7f014a646209 to 0x7f014a60dafb-0x7f014a61dafb, size 65536
+uffd unregistering addr 0x7f014a637000-0x7f014a646000, len 61440
+complete buffer: old offset 521, new offset 2811
+copying before buffer: 1285 bytes from 0x7f014a636209-0x7f014a63670e to 0x7f014a60dafb-0x7f014a60e000
+copying after buffer: 2811 bytes from 0x7f0151dcf505-0x7f0151dd0000 to 0x7f014a61d000-0x7f014a61dafb
+mmaping for uffd at 0x7f014a60e000, length 61440
+uffd registering addr 0x7f014a60e000-0x7f014a61d000, len 61440
+successfully mapped and registered 0x7f014a60e000
+inserting original 0x7f0151dc0000 at location 0x7f014a60d000
+copying 0x7f014a60dac9-0x7f014a61dafd to 0x7f014a73cf3d-0x7f014a74cf71, size 65588
+uffd unregistering addr 0x7f014a60e000-0x7f014a61d000, len 61440
+complete buffer: old offset 2811, new offset 3901
+copying before buffer: 195 bytes from 0x7f014a60dac9-0x7f014a60db8c to 0x7f014a73cf3d-0x7f014a73d000
+copying after buffer: 3901 bytes from 0x7f0151dcf0f7-0x7f0151dd0034 to 0x7f014a74c034-0x7f014a74cf71
+mmaping for uffd at 0x7f014a73d000, length 61440
+uffd registering addr 0x7f014a73d000-0x7f014a74c000, len 61440
+successfully mapped and registered 0x7f014a73d000
+inserting original 0x7f0151dc0000 at location 0x7f014a73c000
+copying 0x7f015259c000-0x7f01525a0000 to 0x7f014a66bb17-0x7f014a66fb17, size 16384
+appropriate size copy, but can't find 0x7f015259c000 in skiplist
+tas read 16384 bytes, page mask 7f014a66b000
+reading from network at 0x7f014a66bb17, size 16384, key 7f014a66b000, original 0x7f015259c000
+old roll_addr 0x7f014a66bb17, prev_addr 0x7f014a644f17, prev_len 4852
+rolling, old original 0x7f0152594000 new original 0x7f015259c000
+small addr not found: prev 0x7f014a64620b, current 0x7f014a66bb17
+new roll_addr 0x7f014a66fb17, size 49152, original 0x7f015259c000 inserting at 0x7f014a663000
+copying 0x7f0153538000-0x7f015353c000 to 0x7f014bb8e897-0x7f014bb92897, size 16384
+appropriate size copy, but can't find 0x7f0153538000 in skiplist
+tas read 16384 bytes, page mask 7f014bb8e000
+reading from network at 0x7f014bb8e897, size 16384, key 7f014bb8e000, original 0x7f0153538000
+old roll_addr 0x7f014bb8e897, prev_addr 0x7f014a66bb17, prev_len 16384
+rolling, old original 0x7f0153534000 new original 0x7f0153538000
+small addr not found: prev 0x7f014a66fb17, current 0x7f014bb8e897
+new roll_addr 0x7f014bb92897, size 32768, original 0x7f0153538000 inserting at 0x7f014bb8a000
+copying 0x7f0152d68000-0x7f0152d6c000 to 0x7f014a6e2d97-0x7f014a6e6d97, size 16384
+appropriate size copy, but can't find 0x7f0152d68000 in skiplist
+tas read 16384 bytes, page mask 7f014a6e2000
+reading from network at 0x7f014a6e2d97, size 16384, key 7f014a6e2000, original 0x7f0152d68000
+old roll_addr 0x7f014a6e2d97, prev_addr 0x7f014bb8e897, prev_len 16384
+rolling, old original 0x7f0152d64000 new original 0x7f0152d68000
+small addr not found: prev 0x7f014bb92897, current 0x7f014a6e2d97
+new roll_addr 0x7f014a6e6d97, size 32768, original 0x7f0152d68000 inserting at 0x7f014a6de000
+copying 0x7f0153d06d40-0x7f0153d0ad40 to 0x7f014a70a857-0x7f014a70e857, size 16384
+appropriate size copy, but can't find 0x7f0153d06000 in skiplist
+tas read 16384 bytes, page mask 7f014a70a000
+reading from network at 0x7f014a70a857, size 16384, key 7f014a70a000, original 0x7f0153d06d40
+old roll_addr 0x7f014a70a857, prev_addr 0x7f014a6e2d97, prev_len 16384
+rolling, old original 0x7f0153d02d40 new original 0x7f0153d06d40
+small addr not found: prev 0x7f014a6e6d97, current 0x7f014a70a857
+new roll_addr 0x7f014a70e857, size 32768, original 0x7f0153d06d40 inserting at 0x7f014a706000
+writing to linux from 0x7f014a72cf09, bounded 0x7f014a72c000, size 131176, entry 0x55dc8c49cba0
+uffd unregistering addr 0x7f014a72d000-0x7f014a74c000, len 126976
+preparing encoding of size 88, new_len = 65588, count = 131176, entry->len=65588
+encoding ready
+write len 88
+tas read 52 bytes, page mask 7f014a66f000
+copying 0x7f014a65fb49-0x7f014a66fb49 to 0x7f014a72cb7b-0x7f014a73cb7b, size 65536
+uffd unregistering addr 0x7f014a660000-0x7f014a66f000, len 61440
+complete buffer: old offset 2889, new offset 2939
+copying before buffer: 1157 bytes from 0x7f014a65fb49-0x7f014a65ffce to 0x7f014a72cb7b-0x7f014a72d000
+copying after buffer: 2939 bytes from 0x7f015259f485-0x7f01525a0000 to 0x7f014a73c000-0x7f014a73cb7b
+mmaping for uffd at 0x7f014a72d000, length 61440
+uffd registering addr 0x7f014a72d000-0x7f014a73c000, len 61440
+successfully mapped and registered 0x7f014a72d000
+inserting original 0x7f0152590000 at location 0x7f014a72c000
+copying 0x7f014a72cb49-0x7f014a73cb7d to 0x7f014bbaf609-0x7f014bbbf63d, size 65588
+uffd unregistering addr 0x7f014a72d000-0x7f014a73c000, len 61440
+incomplete buffer: old offset 2939, new offset 1545
+copying before buffer (1): 1157 bytes from 0x7f014a72cb49-0x7f014a72cfce to 0x7f014bbaf609-0x7f014bbafa8e
+copying before buffer (2): 1394 bytes from 0x7f0152590485-0x7f01525909f7 to 0x7f014bbafa8e-0x7f014bbb0000
+copying after buffer: 1545 bytes from 0x7f015259fa2b-0x7f01525a0034 to 0x7f014bbbf034-0x7f014bbbf63d
+mmaping for uffd at 0x7f014bbb0000, length 61440
+uffd registering addr 0x7f014bbb0000-0x7f014bbbf000, len 61440
+successfully mapped and registered 0x7f014bbb0000
+inserting original 0x7f0152590000 at location 0x7f014bbaf000
+copying 0x7f015353c000-0x7f0153540000 to 0x7f014bb92897-0x7f014bb96897, size 16384
+appropriate size copy, but can't find 0x7f015353c000 in skiplist
+tas read 16384 bytes, page mask 7f014bb92000
+reading from network at 0x7f014bb92897, size 16384, key 7f014bb92000, original 0x7f015353c000
+old roll_addr 0x7f014bb92897, prev_addr 0x7f014a66fb17, prev_len 52
+rolling, old original 0x7f0153534000 new original 0x7f015353c000
+small addr not found: prev 0x7f014a66fb4b, current 0x7f014bb92897
+new roll_addr 0x7f014bb96897, size 49152, original 0x7f015353c000 inserting at 0x7f014bb8a000
+copying 0x7f0152d6c000-0x7f0152d70000 to 0x7f014a6e6d97-0x7f014a6ead97, size 16384
+appropriate size copy, but can't find 0x7f0152d6c000 in skiplist
+tas read 16384 bytes, page mask 7f014a6e6000
+reading from network at 0x7f014a6e6d97, size 16384, key 7f014a6e6000, original 0x7f0152d6c000
+old roll_addr 0x7f014a6e6d97, prev_addr 0x7f014bb92897, prev_len 16384
+rolling, old original 0x7f0152d64000 new original 0x7f0152d6c000
+small addr not found: prev 0x7f014bb96897, current 0x7f014a6e6d97
+new roll_addr 0x7f014a6ead97, size 49152, original 0x7f0152d6c000 inserting at 0x7f014a6de000
+copying 0x7f0153d0ad40-0x7f0153d0ed40 to 0x7f014a70e857-0x7f014a712857, size 16384
+appropriate size copy, but can't find 0x7f0153d0a000 in skiplist
+tas read 16384 bytes, page mask 7f014a70e000
+reading from network at 0x7f014a70e857, size 16384, key 7f014a70e000, original 0x7f0153d0ad40
+old roll_addr 0x7f014a70e857, prev_addr 0x7f014a6e6d97, prev_len 16384
+rolling, old original 0x7f0153d02d40 new original 0x7f0153d0ad40
+small addr not found: prev 0x7f014a6ead97, current 0x7f014a70e857
+new roll_addr 0x7f014a712857, size 49152, original 0x7f0153d0ad40 inserting at 0x7f014a706000
+writing to linux from 0x7f014bbaf609, bounded 0x7f014bbaf000, size 65588, entry 0x55dc8c49cc90
+uffd unregistering addr 0x7f014bbb0000-0x7f014bbbf000, len 61440
+preparing encoding of size 88, new_len = 0, count = 65588, entry->len=65588
+encoding ready
+write len 88
+tas read 52 bytes, page mask 7f014bb96000
+copying 0x7f014bb868c9-0x7f014bb968c9 to 0x7f014bb9bdbb-0x7f014bbabdbb, size 65536
+uffd unregistering addr 0x7f014bb87000-0x7f014bb96000, len 61440
+complete buffer: old offset 2249, new offset 3515
+copying before buffer: 581 bytes from 0x7f014bb868c9-0x7f014bb86b0e to 0x7f014bb9bdbb-0x7f014bb9c000
+copying after buffer: 3515 bytes from 0x7f015353f245-0x7f0153540000 to 0x7f014bbab000-0x7f014bbabdbb
+mmaping for uffd at 0x7f014bb9c000, length 61440
+uffd registering addr 0x7f014bb9c000-0x7f014bbab000, len 61440
+successfully mapped and registered 0x7f014bb9c000
+inserting original 0x7f0153530000 at location 0x7f014bb9b000
+copying 0x7f014bb9bd89-0x7f014bbabdbd to 0x7f014a622389-0x7f014a6323bd, size 65588
+uffd unregistering addr 0x7f014bb9c000-0x7f014bbab000, len 61440
+incomplete buffer: old offset 3515, new offset 905
+copying before buffer (1): 581 bytes from 0x7f014bb9bd89-0x7f014bb9bfce to 0x7f014a622389-0x7f014a6225ce
+copying before buffer (2): 2610 bytes from 0x7f0153530245-0x7f0153530c77 to 0x7f014a6225ce-0x7f014a623000
+copying after buffer: 905 bytes from 0x7f015353fcab-0x7f0153540034 to 0x7f014a632034-0x7f014a6323bd
+mmaping for uffd at 0x7f014a623000, length 61440
+uffd registering addr 0x7f014a623000-0x7f014a632000, len 61440
+successfully mapped and registered 0x7f014a623000
+inserting original 0x7f0153530000 at location 0x7f014a622000
+tas read 52 bytes, page mask 7f014a6ea000
+copying 0x7f014a6dadc9-0x7f014a6eadc9 to 0x7f014bb8673b-0x7f014bb9673b, size 65536
+uffd unregistering addr 0x7f014a6db000-0x7f014a6ea000, len 61440
+incomplete buffer: old offset 3529, new offset 1851
+copying before buffer (1): 567 bytes from 0x7f014a6dadc9-0x7f014a6db000 to 0x7f014bb8673b-0x7f014bb86972
+copying before buffer (2): 1678 bytes from 0x7f0152d60237-0x7f0152d608c5 to 0x7f014bb86972-0x7f014bb87000
+copying after buffer: 1851 bytes from 0x7f0152d6f8c5-0x7f0152d70000 to 0x7f014bb96000-0x7f014bb9673b
+mmaping for uffd at 0x7f014bb87000, length 61440
+uffd registering addr 0x7f014bb87000-0x7f014bb96000, len 61440
+successfully mapped and registered 0x7f014bb87000
+inserting original 0x7f0152d60000 at location 0x7f014bb86000
+copying 0x7f014bb86709-0x7f014bb9673d to 0x7f014a6323bd-0x7f014a6423f1, size 65588
+uffd unregistering addr 0x7f014bb87000-0x7f014bb96000, len 61440
+incomplete buffer: old offset 1851, new offset 957
+copying before buffer (1): 2245 bytes from 0x7f014bb86709-0x7f014bb86fce to 0x7f014a6323bd-0x7f014a632c82
+copying before buffer (2): 894 bytes from 0x7f0152d608c5-0x7f0152d60c43 to 0x7f014a632c82-0x7f014a633000
+copying after buffer: 957 bytes from 0x7f0152d6fc77-0x7f0152d70034 to 0x7f014a642034-0x7f014a6423f1
+mmaping for uffd at 0x7f014a633000, length 61440
+uffd registering addr 0x7f014a633000-0x7f014a642000, len 61440
+successfully mapped and registered 0x7f014a633000
+inserting original 0x7f0152d60000 at location 0x7f014a632000
+sizeable, but not large enough copy from 0x7f014a712857 to 0x7f0153d0ed40 of size 4852
+tas read 4852 bytes, page mask 7f014a712000
+copying 0x7f014a703b49-0x7f014a713b49 to 0x7f014a6c77bb-0x7f014a6d77bb, size 65536
+uffd unregistering addr 0x7f014a704000-0x7f014a713000, len 61440
+incomplete buffer: old offset 2889, new offset 1979
+copying before buffer (1): 1207 bytes from 0x7f014a703b49-0x7f014a704000 to 0x7f014a6c77bb-0x7f014a6c7c72
+copying before buffer (2): 910 bytes from 0x7f0153d004b7-0x7f0153d00845 to 0x7f014a6c7c72-0x7f014a6c8000
+copying after buffer: 1979 bytes from 0x7f0153d0f845-0x7f0153d10000 to 0x7f014a6d7000-0x7f014a6d77bb
+mmaping for uffd at 0x7f014a6c8000, length 61440
+uffd registering addr 0x7f014a6c8000-0x7f014a6d7000, len 61440
+successfully mapped and registered 0x7f014a6c8000
+inserting original 0x7f0153d00000 at location 0x7f014a6c7000
+copying 0x7f014a622380-0x7f014a64a380 to 0x7f014a755880-0x7f014a77d880, size 163840
+uffd unregistering addr 0x7f014a623000-0x7f014a64a000, len 159744
+complete buffer: old offset 905, new offset 2176
+copying before buffer: 1920 bytes from 0x7f014a622380-0x7f014a622b00 to 0x7f014a755880-0x7f014a756000
+copying after buffer: 2176 bytes from 0x7f0153557780-0x7f0153558000 to 0x7f014a77d000-0x7f014a77d880
+mmaping for uffd at 0x7f014a756000, length 159744
+uffd registering addr 0x7f014a756000-0x7f014a77d000, len 159744
+successfully mapped and registered 0x7f014a756000
+inserting original 0x7f0153530000 at location 0x7f014a755000
+copying 0x7f014a6c7789-0x7f014a6d77bd to 0x7f014a7758f1-0x7f014a785925, size 65588
+writing to linux from 0x7f014a755889, bounded 0x7f014a755000, size 196764, entry 0x55dc8c49ccf0
+uffd unregistering addr 0x7f014a756000-0x7f014a785000, len 192512
+preparing encoding of size 88, new_len = 32924, count = 196764, entry->len=163840
+encoding ready
+write len 88
+copying 0x7f0150e30034-0x7f0150e34034 to 0x7f014a688709-0x7f014a68c709, size 16384
+appropriate size copy, but can't find 0x7f0150e30000 in skiplist
+tas read 16384 bytes, page mask 7f014a688000
+reading from network at 0x7f014a688709, size 16384, key 7f014a688000, original 0x7f0150e30034
+old roll_addr 0x7f014bbca80b, prev_addr 0x7f014a712857, prev_len 4852
+not rolling
+small addr not found: prev 0x7f014a713b4b, current 0x7f014a688709
+new roll_addr 0x7f014a68c709, size 16384, original 0x7f0150e30034 inserting at 0x7f014a688000
+moving 0x7f014a68873b to 0x7f014a688709, size 16334
+copying 0x7f0150e34034-0x7f0150e38034 to 0x7f014a68c6d7-0x7f014a6906d7, size 16384
+appropriate size copy, but can't find 0x7f0150e34000 in skiplist
+tas read 16384 bytes, page mask 7f014a68c000
+reading from network at 0x7f014a68c6d7, size 16384, key 7f014a68c000, original 0x7f0150e34034
+old roll_addr 0x7f014a68c709, prev_addr 0x7f014a688709, prev_len 16384
+not rolling
+small addr not found: prev 0x7f014a68c709, current 0x7f014a68c6d7
+new roll_addr 0x7f014a6906d7, size 16384, original 0x7f0150e34034 inserting at 0x7f014a68c000
+copying 0x7f0150e38034-0x7f0150e3c034 to 0x7f014a6906d7-0x7f014a6946d7, size 16384
+appropriate size copy, but can't find 0x7f0150e38000 in skiplist
+tas read 16384 bytes, page mask 7f014a690000
+reading from network at 0x7f014a6906d7, size 16384, key 7f014a690000, original 0x7f0150e38034
+old roll_addr 0x7f014a6906d7, prev_addr 0x7f014a68c6d7, prev_len 16384
+rolling, old original 0x7f0150e34034 new original 0x7f0150e38034
+small addr not found: prev 0x7f014a6906d7, current 0x7f014a6906d7
+new roll_addr 0x7f014a6946d7, size 32768, original 0x7f0150e38034 inserting at 0x7f014a68c000
+copying 0x7f0150660034-0x7f0150664034 to 0x7f014bbe3489-0x7f014bbe7489, size 16384
+appropriate size copy, but can't find 0x7f0150660000 in skiplist
+tas read 16384 bytes, page mask 7f014bbe3000
+reading from network at 0x7f014bbe3489, size 16384, key 7f014bbe3000, original 0x7f0150660034
+old roll_addr 0x7f014bba165f, prev_addr 0x7f014a6906d7, prev_len 16384
+not rolling
+small addr not found: prev 0x7f014a6946d7, current 0x7f014bbe3489
+new roll_addr 0x7f014bbe7489, size 16384, original 0x7f0150660034 inserting at 0x7f014bbe3000
+moving 0x7f014bbe34bb to 0x7f014bbe3489, size 16334
+copying 0x7f0150e3c034-0x7f0150e40034 to 0x7f014a6946d7-0x7f014a6986d7, size 16384
+appropriate size copy, but can't find 0x7f0150e3c000 in skiplist
+tas read 16384 bytes, page mask 7f014a694000
+reading from network at 0x7f014a6946d7, size 16384, key 7f014a694000, original 0x7f0150e3c034
+old roll_addr 0x7f014a6946d7, prev_addr 0x7f014bbe3489, prev_len 16384
+rolling, old original 0x7f0150e34034 new original 0x7f0150e3c034
+small addr not found: prev 0x7f014bbe7489, current 0x7f014a6946d7
+new roll_addr 0x7f014a6986d7, size 49152, original 0x7f0150e3c034 inserting at 0x7f014a68c000
+copying 0x7f0150664034-0x7f0150668034 to 0x7f014bbe7457-0x7f014bbeb457, size 16384
+appropriate size copy, but can't find 0x7f0150664000 in skiplist
+tas read 16384 bytes, page mask 7f014bbe7000
+reading from network at 0x7f014bbe7457, size 16384, key 7f014bbe7000, original 0x7f0150664034
+old roll_addr 0x7f014bbe7489, prev_addr 0x7f014a6946d7, prev_len 16384
+not rolling
+small addr not found: prev 0x7f014a6986d7, current 0x7f014bbe7457
+new roll_addr 0x7f014bbeb457, size 16384, original 0x7f0150664034 inserting at 0x7f014bbe7000
+tas read 52 bytes, page mask 7f014a698000
+copying 0x7f014a688709-0x7f014a698709 to 0x7f014a7c6d7b-0x7f014a7d6d7b, size 65536
+uffd unregistering addr 0x7f014a689000-0x7f014a698000, len 61440
+complete buffer: old offset 0, new offset 3451
+copying before buffer: 645 bytes from 0x7f014a688709-0x7f014a68898e to 0x7f014a7c6d7b-0x7f014a7c7000
+copying after buffer: 3451 bytes from 0x7f0150e3f2b9-0x7f0150e40034 to 0x7f014a7d6000-0x7f014a7d6d7b
+mmaping for uffd at 0x7f014a7c7000, length 61440
+uffd registering addr 0x7f014a7c7000-0x7f014a7d6000, len 61440
+successfully mapped and registered 0x7f014a7c7000
+inserting original 0x7f0150e30034 at location 0x7f014a7c6000
+copying 0x7f014a7c6d49-0x7f014a7d6d7d to 0x7f014bb86ac9-0x7f014bb96afd, size 65588
+uffd unregistering addr 0x7f014a7c7000-0x7f014a7d6000, len 61440
+incomplete buffer: old offset 3451, new offset 2761
+copying before buffer (1): 645 bytes from 0x7f014a7c6d49-0x7f014a7c6fce to 0x7f014bb86ac9-0x7f014bb86d4e
+copying before buffer (2): 690 bytes from 0x7f0150e302b9-0x7f0150e3056b to 0x7f014bb86d4e-0x7f014bb87000
+copying after buffer: 2761 bytes from 0x7f0150e3f59f-0x7f0150e40068 to 0x7f014bb96034-0x7f014bb96afd
+mmaping for uffd at 0x7f014bb87000, length 61440
+uffd registering addr 0x7f014bb87000-0x7f014bb96000, len 61440
+successfully mapped and registered 0x7f014bb87000
+inserting original 0x7f0150e30034 at location 0x7f014bb86000
+copying 0x7f0150668034-0x7f015066c034 to 0x7f014bbeb457-0x7f014bbef457, size 16384
+appropriate size copy, but can't find 0x7f0150668000 in skiplist
+tas read 16384 bytes, page mask 7f014bbeb000
+reading from network at 0x7f014bbeb457, size 16384, key 7f014bbeb000, original 0x7f0150668034
+old roll_addr 0x7f014bbeb457, prev_addr 0x7f014a6986d7, prev_len 52
+rolling, old original 0x7f0150664034 new original 0x7f0150668034
+small addr not found: prev 0x7f014a69870b, current 0x7f014bbeb457
+new roll_addr 0x7f014bbef457, size 32768, original 0x7f0150668034 inserting at 0x7f014bbe7000
+writing to linux from 0x7f014bb86ac9, bounded 0x7f014bb86000, size 65588, entry 0x55dc8c49ccf0
+uffd unregistering addr 0x7f014bb87000-0x7f014bb96000, len 61440
+preparing encoding of size 88, new_len = 0, count = 65588, entry->len=65588
+encoding ready
+write len 88
+copying 0x7f015066c034-0x7f0150670034 to 0x7f014bbef457-0x7f014bbf3457, size 16384
+appropriate size copy, but can't find 0x7f015066c000 in skiplist
+tas read 16384 bytes, page mask 7f014bbef000
+reading from network at 0x7f014bbef457, size 16384, key 7f014bbef000, original 0x7f015066c034
+old roll_addr 0x7f014bbef457, prev_addr 0x7f014bbeb457, prev_len 16384
+rolling, old original 0x7f0150664034 new original 0x7f015066c034
+small addr not found: prev 0x7f014bbef457, current 0x7f014bbef457
+new roll_addr 0x7f014bbf3457, size 49152, original 0x7f015066c034 inserting at 0x7f014bbe7000
+tas read 52 bytes, page mask 7f014bbf3000
+copying 0x7f014bbe3489-0x7f014bbf3489 to 0x7f014bb9bf3b-0x7f014bbabf3b, size 65536
+uffd unregistering addr 0x7f014bbe4000-0x7f014bbf3000, len 61440
+complete buffer: old offset 0, new offset 3899
+copying before buffer: 197 bytes from 0x7f014bbe3489-0x7f014bbe354e to 0x7f014bb9bf3b-0x7f014bb9c000
+copying after buffer: 3899 bytes from 0x7f015066f0f9-0x7f0150670034 to 0x7f014bbab000-0x7f014bbabf3b
+mmaping for uffd at 0x7f014bb9c000, length 61440
+uffd registering addr 0x7f014bb9c000-0x7f014bbab000, len 61440
+successfully mapped and registered 0x7f014bb9c000
+inserting original 0x7f0150660034 at location 0x7f014bb9b000
+copying 0x7f014bb9bf09-0x7f014bbabf3d to 0x7f014a6c7d89-0x7f014a6d7dbd, size 65588
+uffd unregistering addr 0x7f014bb9c000-0x7f014bbab000, len 61440
+incomplete buffer: old offset 3899, new offset 3465
+copying before buffer (1): 197 bytes from 0x7f014bb9bf09-0x7f014bb9bfce to 0x7f014a6c7d89-0x7f014a6c7e4e
+copying before buffer (2): 434 bytes from 0x7f01506600f9-0x7f01506602ab to 0x7f014a6c7e4e-0x7f014a6c8000
+copying after buffer: 3465 bytes from 0x7f015066f2df-0x7f0150670068 to 0x7f014a6d7034-0x7f014a6d7dbd
+mmaping for uffd at 0x7f014a6c8000, length 61440
+uffd registering addr 0x7f014a6c8000-0x7f014a6d7000, len 61440
+successfully mapped and registered 0x7f014a6c8000
+inserting original 0x7f0150660034 at location 0x7f014a6c7000
+writing to linux from 0x7f014a6c7d89, bounded 0x7f014a6c7000, size 65588, entry 0x55dc8c49cd90
+uffd unregistering addr 0x7f014a6c8000-0x7f014a6d7000, len 61440
+preparing encoding of size 88, new_len = 0, count = 65588, entry->len=65588
+encoding ready
+write len 88
+copying 0x7f0150e40068-0x7f0150e44068 to 0x7f014a6220c9-0x7f014a6260c9, size 16384
+appropriate size copy, but can't find 0x7f0150e40000 in skiplist
+tas read 16384 bytes, page mask 7f014a622000
+reading from network at 0x7f014a6220c9, size 16384, key 7f014a622000, original 0x7f0150e40068
+old roll_addr 0x7f014a6986d7, prev_addr 0x7f014bbf3457, prev_len 52
+not rolling
+small addr not found: prev 0x7f014bbf348b, current 0x7f014a6220c9
+new roll_addr 0x7f014a6260c9, size 16384, original 0x7f0150e40068 inserting at 0x7f014a622000
+moving 0x7f014a6220fb to 0x7f014a6220c9, size 16334
+copying 0x7f0150e44068-0x7f0150e48068 to 0x7f014a626097-0x7f014a62a097, size 16384
+appropriate size copy, but can't find 0x7f0150e44000 in skiplist
+tas read 16384 bytes, page mask 7f014a626000
+reading from network at 0x7f014a626097, size 16384, key 7f014a626000, original 0x7f0150e44068
+old roll_addr 0x7f014a6260c9, prev_addr 0x7f014a6220c9, prev_len 16384
+not rolling
+small addr not found: prev 0x7f014a6260c9, current 0x7f014a626097
+new roll_addr 0x7f014a62a097, size 16384, original 0x7f0150e44068 inserting at 0x7f014a626000
+copying 0x7f0150e48068-0x7f0150e4c068 to 0x7f014a62a097-0x7f014a62e097, size 16384
+appropriate size copy, but can't find 0x7f0150e48000 in skiplist
+tas read 16384 bytes, page mask 7f014a62a000
+reading from network at 0x7f014a62a097, size 16384, key 7f014a62a000, original 0x7f0150e48068
+old roll_addr 0x7f014a62a097, prev_addr 0x7f014a626097, prev_len 16384
+rolling, old original 0x7f0150e44068 new original 0x7f0150e48068
+small addr not found: prev 0x7f014a62a097, current 0x7f014a62a097
+new roll_addr 0x7f014a62e097, size 32768, original 0x7f0150e48068 inserting at 0x7f014a626000
+copying 0x7f0150670068-0x7f0150674068 to 0x7f014bb868c9-0x7f014bb8a8c9, size 16384
+appropriate size copy, but can't find 0x7f0150670000 in skiplist
+tas read 16384 bytes, page mask 7f014bb86000
+reading from network at 0x7f014bb868c9, size 16384, key 7f014bb86000, original 0x7f0150670068
+old roll_addr 0x7f014bbf3457, prev_addr 0x7f014a62a097, prev_len 16384
+not rolling
+small addr not found: prev 0x7f014a62e097, current 0x7f014bb868c9
+new roll_addr 0x7f014bb8a8c9, size 16384, original 0x7f0150670068 inserting at 0x7f014bb86000
+moving 0x7f014bb868fb to 0x7f014bb868c9, size 16334
+copying 0x7f0151dd0034-0x7f0151dd4034 to 0x7f014a6b2e49-0x7f014a6b6e49, size 16384
+appropriate size copy, but can't find 0x7f0151dd0000 in skiplist
+tas read 16384 bytes, page mask 7f014a6b2000
+reading from network at 0x7f014a6b2e49, size 16384, key 7f014a6b2000, original 0x7f0151dd0034
+old roll_addr 0x7f014a644f17, prev_addr 0x7f014bb868c9, prev_len 16384
+not rolling
+small addr not found: prev 0x7f014bb8a8c9, current 0x7f014a6b2e49
+new roll_addr 0x7f014a6b6e49, size 16384, original 0x7f0151dd0034 inserting at 0x7f014a6b2000
+moving 0x7f014a6b2e7b to 0x7f014a6b2e49, size 16334
+copying 0x7f0150e4c068-0x7f0150e50068 to 0x7f014a62e097-0x7f014a632097, size 16384
+appropriate size copy, but can't find 0x7f0150e4c000 in skiplist
+tas read 16384 bytes, page mask 7f014a62e000
+reading from network at 0x7f014a62e097, size 16384, key 7f014a62e000, original 0x7f0150e4c068
+old roll_addr 0x7f014a62e097, prev_addr 0x7f014a6b2e49, prev_len 16384
+rolling, old original 0x7f0150e44068 new original 0x7f0150e4c068
+small addr not found: prev 0x7f014a6b6e49, current 0x7f014a62e097
+new roll_addr 0x7f014a632097, size 49152, original 0x7f0150e4c068 inserting at 0x7f014a626000
+copying 0x7f0150674068-0x7f0150678068 to 0x7f014bb8a897-0x7f014bb8e897, size 16384
+appropriate size copy, but can't find 0x7f0150674000 in skiplist
+tas read 16384 bytes, page mask 7f014bb8a000
+reading from network at 0x7f014bb8a897, size 16384, key 7f014bb8a000, original 0x7f0150674068
+old roll_addr 0x7f014bb8a8c9, prev_addr 0x7f014a62e097, prev_len 16384
+not rolling
+small addr not found: prev 0x7f014a632097, current 0x7f014bb8a897
+new roll_addr 0x7f014bb8e897, size 16384, original 0x7f0150674068 inserting at 0x7f014bb8a000
+copying 0x7f0151dd4034-0x7f0151dd8034 to 0x7f014a6b6e17-0x7f014a6bae17, size 16384
+appropriate size copy, but can't find 0x7f0151dd4000 in skiplist
+tas read 16384 bytes, page mask 7f014a6b6000
+reading from network at 0x7f014a6b6e17, size 16384, key 7f014a6b6000, original 0x7f0151dd4034
+old roll_addr 0x7f014a6b6e49, prev_addr 0x7f014bb8a897, prev_len 16384
+not rolling
+small addr not found: prev 0x7f014bb8e897, current 0x7f014a6b6e17
+new roll_addr 0x7f014a6bae17, size 16384, original 0x7f0151dd4034 inserting at 0x7f014a6b6000
+copying 0x7f0151600034-0x7f0151604034 to 0x7f014a69de49-0x7f014a6a1e49, size 16384
+appropriate size copy, but can't find 0x7f0151600000 in skiplist
+tas read 16384 bytes, page mask 7f014a69d000
+reading from network at 0x7f014a69de49, size 16384, key 7f014a69d000, original 0x7f0151600034
+old roll_addr 0x7f014a61be17, prev_addr 0x7f014a6b6e17, prev_len 16384
+not rolling
+small addr not found: prev 0x7f014a6bae17, current 0x7f014a69de49
+new roll_addr 0x7f014a6a1e49, size 16384, original 0x7f0151600034 inserting at 0x7f014a69d000
+moving 0x7f014a69de7b to 0x7f014a69de49, size 16334
+tas read 52 bytes, page mask 7f014a632000
+copying 0x7f014a6220c9-0x7f014a6320c9 to 0x7f014bb9b8fb-0x7f014bbab8fb, size 65536
+uffd unregistering addr 0x7f014a623000-0x7f014a632000, len 61440
+complete buffer: old offset 0, new offset 2299
+copying before buffer: 1797 bytes from 0x7f014a6220c9-0x7f014a6227ce to 0x7f014bb9b8fb-0x7f014bb9c000
+copying after buffer: 2299 bytes from 0x7f0150e4f76d-0x7f0150e50068 to 0x7f014bbab000-0x7f014bbab8fb
+mmaping for uffd at 0x7f014bb9c000, length 61440
+uffd registering addr 0x7f014bb9c000-0x7f014bbab000, len 61440
+successfully mapped and registered 0x7f014bb9c000
+inserting original 0x7f0150e40068 at location 0x7f014bb9b000
+copying 0x7f014bb9b8c9-0x7f014bbab8fd to 0x7f014bbc4189-0x7f014bbd41bd, size 65588
+uffd unregistering addr 0x7f014bb9c000-0x7f014bbab000, len 61440
+incomplete buffer: old offset 2299, new offset 393
+copying before buffer (1): 1797 bytes from 0x7f014bb9b8c9-0x7f014bb9bfce to 0x7f014bbc4189-0x7f014bbc488e
+copying before buffer (2): 1906 bytes from 0x7f0150e4076d-0x7f0150e40edf to 0x7f014bbc488e-0x7f014bbc5000
+copying after buffer: 393 bytes from 0x7f0150e4ff13-0x7f0150e5009c to 0x7f014bbd4034-0x7f014bbd41bd
+mmaping for uffd at 0x7f014bbc5000, length 61440
+uffd registering addr 0x7f014bbc5000-0x7f014bbd4000, len 61440
+successfully mapped and registered 0x7f014bbc5000
+inserting original 0x7f0150e40068 at location 0x7f014bbc4000
+copying 0x7f0150678068-0x7f015067c068 to 0x7f014bb8e897-0x7f014bb92897, size 16384
+appropriate size copy, but can't find 0x7f0150678000 in skiplist
+tas read 16384 bytes, page mask 7f014bb8e000
+reading from network at 0x7f014bb8e897, size 16384, key 7f014bb8e000, original 0x7f0150678068
+old roll_addr 0x7f014bb8e897, prev_addr 0x7f014a632097, prev_len 52
+rolling, old original 0x7f0150674068 new original 0x7f0150678068
+small addr not found: prev 0x7f014a6320cb, current 0x7f014bb8e897
+new roll_addr 0x7f014bb92897, size 32768, original 0x7f0150678068 inserting at 0x7f014bb8a000
+copying 0x7f0151dd8034-0x7f0151ddc034 to 0x7f014a6bae17-0x7f014a6bee17, size 16384
+appropriate size copy, but can't find 0x7f0151dd8000 in skiplist
+tas read 16384 bytes, page mask 7f014a6ba000
+reading from network at 0x7f014a6bae17, size 16384, key 7f014a6ba000, original 0x7f0151dd8034
+old roll_addr 0x7f014a6bae17, prev_addr 0x7f014bb8e897, prev_len 16384
+rolling, old original 0x7f0151dd4034 new original 0x7f0151dd8034
+small addr not found: prev 0x7f014bb92897, current 0x7f014a6bae17
+new roll_addr 0x7f014a6bee17, size 32768, original 0x7f0151dd8034 inserting at 0x7f014a6b6000
+copying 0x7f0151604034-0x7f0151608034 to 0x7f014a6a1e17-0x7f014a6a5e17, size 16384
+appropriate size copy, but can't find 0x7f0151604000 in skiplist
+tas read 16384 bytes, page mask 7f014a6a1000
+reading from network at 0x7f014a6a1e17, size 16384, key 7f014a6a1000, original 0x7f0151604034
+old roll_addr 0x7f014a6a1e49, prev_addr 0x7f014a6bae17, prev_len 16384
+not rolling
+small addr not found: prev 0x7f014a6bee17, current 0x7f014a6a1e17
+new roll_addr 0x7f014a6a5e17, size 16384, original 0x7f0151604034 inserting at 0x7f014a6a1000
+copying 0x7f01525a0034-0x7f01525a4034 to 0x7f014a60d349-0x7f014a611349, size 16384
+appropriate size copy, but can't find 0x7f01525a0000 in skiplist
+tas read 16384 bytes, page mask 7f014a60d000
+reading from network at 0x7f014a60d349, size 16384, key 7f014a60d000, original 0x7f01525a0034
+old roll_addr 0x7f014a66fb17, prev_addr 0x7f014a6a1e17, prev_len 16384
+not rolling
+small addr not found: prev 0x7f014a6a5e17, current 0x7f014a60d349
+new roll_addr 0x7f014a611349, size 16384, original 0x7f01525a0034 inserting at 0x7f014a60d000
+moving 0x7f014a60d37b to 0x7f014a60d349, size 16334
+writing to linux from 0x7f014bbc4189, bounded 0x7f014bbc4000, size 65588, entry 0x55dc8c49cd90
+uffd unregistering addr 0x7f014bbc5000-0x7f014bbd4000, len 61440
+preparing encoding of size 88, new_len = 0, count = 65588, entry->len=65588
+encoding ready
+write len 88
+copying 0x7f015067c068-0x7f0150680068 to 0x7f014bb92897-0x7f014bb96897, size 16384
+appropriate size copy, but can't find 0x7f015067c000 in skiplist
+tas read 16384 bytes, page mask 7f014bb92000
+reading from network at 0x7f014bb92897, size 16384, key 7f014bb92000, original 0x7f015067c068
+old roll_addr 0x7f014bb92897, prev_addr 0x7f014a60d349, prev_len 16384
+rolling, old original 0x7f0150674068 new original 0x7f015067c068
+small addr not found: prev 0x7f014a611349, current 0x7f014bb92897
+new roll_addr 0x7f014bb96897, size 49152, original 0x7f015067c068 inserting at 0x7f014bb8a000
+copying 0x7f0151ddc034-0x7f0151de0034 to 0x7f014a6bee17-0x7f014a6c2e17, size 16384
+appropriate size copy, but can't find 0x7f0151ddc000 in skiplist
+tas read 16384 bytes, page mask 7f014a6be000
+reading from network at 0x7f014a6bee17, size 16384, key 7f014a6be000, original 0x7f0151ddc034
+old roll_addr 0x7f014a6bee17, prev_addr 0x7f014bb92897, prev_len 16384
+rolling, old original 0x7f0151dd4034 new original 0x7f0151ddc034
+small addr not found: prev 0x7f014bb96897, current 0x7f014a6bee17
+new roll_addr 0x7f014a6c2e17, size 49152, original 0x7f0151ddc034 inserting at 0x7f014a6b6000
+copying 0x7f0151608034-0x7f015160c034 to 0x7f014a6a5e17-0x7f014a6a9e17, size 16384
+appropriate size copy, but can't find 0x7f0151608000 in skiplist
+tas read 16384 bytes, page mask 7f014a6a5000
+reading from network at 0x7f014a6a5e17, size 16384, key 7f014a6a5000, original 0x7f0151608034
+old roll_addr 0x7f014a6a5e17, prev_addr 0x7f014a6bee17, prev_len 16384
+rolling, old original 0x7f0151604034 new original 0x7f0151608034
+small addr not found: prev 0x7f014a6c2e17, current 0x7f014a6a5e17
+new roll_addr 0x7f014a6a9e17, size 32768, original 0x7f0151608034 inserting at 0x7f014a6a1000
+copying 0x7f01525a4034-0x7f01525a8034 to 0x7f014a611317-0x7f014a615317, size 16384
+appropriate size copy, but can't find 0x7f01525a4000 in skiplist
+tas read 16384 bytes, page mask 7f014a611000
+reading from network at 0x7f014a611317, size 16384, key 7f014a611000, original 0x7f01525a4034
+old roll_addr 0x7f014a611349, prev_addr 0x7f014a6a5e17, prev_len 16384
+not rolling
+small addr not found: prev 0x7f014a6a9e17, current 0x7f014a611317
+new roll_addr 0x7f014a615317, size 16384, original 0x7f01525a4034 inserting at 0x7f014a611000
+tas read 52 bytes, page mask 7f014bb96000
+copying 0x7f014bb868c9-0x7f014bb968c9 to 0x7f014a6225bb-0x7f014a6325bb, size 65536
+uffd unregistering addr 0x7f014bb87000-0x7f014bb96000, len 61440
+complete buffer: old offset 0, new offset 1467
+copying before buffer: 2629 bytes from 0x7f014bb868c9-0x7f014bb8730e to 0x7f014a6225bb-0x7f014a623000
+copying after buffer: 1467 bytes from 0x7f015067faad-0x7f0150680068 to 0x7f014a632000-0x7f014a6325bb
+mmaping for uffd at 0x7f014a623000, length 61440
+uffd registering addr 0x7f014a623000-0x7f014a632000, len 61440
+successfully mapped and registered 0x7f014a623000
+inserting original 0x7f0150670068 at location 0x7f014a622000
+copying 0x7f014a622589-0x7f014a6325bd to 0x7f014bbb0489-0x7f014bbc04bd, size 65588
+uffd unregistering addr 0x7f014a623000-0x7f014a632000, len 61440
+incomplete buffer: old offset 1467, new offset 1161
+copying before buffer (1): 2629 bytes from 0x7f014a622589-0x7f014a622fce to 0x7f014bbb0489-0x7f014bbb0ece
+copying before buffer (2): 306 bytes from 0x7f0150670aad-0x7f0150670bdf to 0x7f014bbb0ece-0x7f014bbb1000
+copying after buffer: 1161 bytes from 0x7f015067fc13-0x7f015068009c to 0x7f014bbc0034-0x7f014bbc04bd
+mmaping for uffd at 0x7f014bbb1000, length 61440
+uffd registering addr 0x7f014bbb1000-0x7f014bbc0000, len 61440
+successfully mapped and registered 0x7f014bbb1000
+inserting original 0x7f0150670068 at location 0x7f014bbb0000
+tas read 52 bytes, page mask 7f014a6c2000
+copying 0x7f014a6b2e49-0x7f014a6c2e49 to 0x7f014a622e7b-0x7f014a632e7b, size 65536
+uffd unregistering addr 0x7f014a6b3000-0x7f014a6c2000, len 61440
+complete buffer: old offset 0, new offset 3707
+copying before buffer: 389 bytes from 0x7f014a6b2e49-0x7f014a6b2fce to 0x7f014a622e7b-0x7f014a623000
+copying after buffer: 3707 bytes from 0x7f0151ddf1b9-0x7f0151de0034 to 0x7f014a632000-0x7f014a632e7b
+mmaping for uffd at 0x7f014a623000, length 61440
+uffd registering addr 0x7f014a623000-0x7f014a632000, len 61440
+successfully mapped and registered 0x7f014a623000
+inserting original 0x7f0151dd0034 at location 0x7f014a622000
+copying 0x7f014a622e49-0x7f014a632e7d to 0x7f014bbc04bd-0x7f014bbd04f1, size 65588
+uffd unregistering addr 0x7f014a623000-0x7f014a632000, len 61440
+incomplete buffer: old offset 3707, new offset 1213
+copying before buffer (1): 389 bytes from 0x7f014a622e49-0x7f014a622fce to 0x7f014bbc04bd-0x7f014bbc0642
+copying before buffer (2): 2494 bytes from 0x7f0151dd01b9-0x7f0151dd0b77 to 0x7f014bbc0642-0x7f014bbc1000
+copying after buffer: 1213 bytes from 0x7f0151ddfbab-0x7f0151de0068 to 0x7f014bbd0034-0x7f014bbd04f1
+mmaping for uffd at 0x7f014bbc1000, length 61440
+uffd registering addr 0x7f014bbc1000-0x7f014bbd0000, len 61440
+successfully mapped and registered 0x7f014bbc1000
+inserting original 0x7f0151dd0034 at location 0x7f014bbc0000
+copying 0x7f015160c034-0x7f0151610034 to 0x7f014a6a9e17-0x7f014a6ade17, size 16384
+appropriate size copy, but can't find 0x7f015160c000 in skiplist
+tas read 16384 bytes, page mask 7f014a6a9000
+reading from network at 0x7f014a6a9e17, size 16384, key 7f014a6a9000, original 0x7f015160c034
+old roll_addr 0x7f014a6a9e17, prev_addr 0x7f014a6c2e17, prev_len 52
+rolling, old original 0x7f0151604034 new original 0x7f015160c034
+small addr not found: prev 0x7f014a6c2e4b, current 0x7f014a6a9e17
+new roll_addr 0x7f014a6ade17, size 49152, original 0x7f015160c034 inserting at 0x7f014a6a1000
+copying 0x7f01525a8034-0x7f01525ac034 to 0x7f014a615317-0x7f014a619317, size 16384
+appropriate size copy, but can't find 0x7f01525a8000 in skiplist
+tas read 16384 bytes, page mask 7f014a615000
+reading from network at 0x7f014a615317, size 16384, key 7f014a615000, original 0x7f01525a8034
+old roll_addr 0x7f014a615317, prev_addr 0x7f014a6a9e17, prev_len 16384
+rolling, old original 0x7f01525a4034 new original 0x7f01525a8034
+small addr not found: prev 0x7f014a6ade17, current 0x7f014a615317
+new roll_addr 0x7f014a619317, size 32768, original 0x7f01525a8034 inserting at 0x7f014a611000
+copying 0x7f0150e5009c-0x7f0150e5409c to 0x7f014a675989-0x7f014a679989, size 16384
+appropriate size copy, but can't find 0x7f0150e50000 in skiplist
+tas read 16384 bytes, page mask 7f014a675000
+reading from network at 0x7f014a675989, size 16384, key 7f014a675000, original 0x7f0150e5009c
+old roll_addr 0x7f014a632097, prev_addr 0x7f014a615317, prev_len 16384
+not rolling
+small addr not found: prev 0x7f014a619317, current 0x7f014a675989
+new roll_addr 0x7f014a679989, size 16384, original 0x7f0150e5009c inserting at 0x7f014a675000
+moving 0x7f014a6759bb to 0x7f014a675989, size 16334
+copying 0x7f0153d10034-0x7f0153d14034 to 0x7f014a660d49-0x7f014a664d49, size 16384
+appropriate size copy, but can't find 0x7f0153d10000 in skiplist
+tas read 16384 bytes, page mask 7f014a660000
+reading from network at 0x7f014a660d49, size 16384, key 7f014a660000, original 0x7f0153d10034
+old roll_addr 0x7f014a712857, prev_addr 0x7f014a675989, prev_len 16384
+not rolling
+small addr not found: prev 0x7f014a679989, current 0x7f014a660d49
+new roll_addr 0x7f014a664d49, size 16384, original 0x7f0153d10034 inserting at 0x7f014a660000
+moving 0x7f014a660d7b to 0x7f014a660d49, size 16334
+writing to linux from 0x7f014bbb0489, bounded 0x7f014bbb0000, size 131176, entry 0x55dc8c49e9f0
+uffd unregistering addr 0x7f014bbb1000-0x7f014bbd0000, len 126976
+preparing encoding of size 88, new_len = 65588, count = 131176, entry->len=65588
+encoding ready
+write len 88
+tas read 52 bytes, page mask 7f014a6ad000
+copying 0x7f014a69de49-0x7f014a6ade49 to 0x7f014bbb073b-0x7f014bbc073b, size 65536
+uffd unregistering addr 0x7f014a69e000-0x7f014a6ad000, len 61440
+complete buffer: old offset 0, new offset 1851
+copying before buffer: 2245 bytes from 0x7f014a69de49-0x7f014a69e70e to 0x7f014bbb073b-0x7f014bbb1000
+copying after buffer: 1851 bytes from 0x7f015160f8f9-0x7f0151610034 to 0x7f014bbc0000-0x7f014bbc073b
+mmaping for uffd at 0x7f014bbb1000, length 61440
+uffd registering addr 0x7f014bbb1000-0x7f014bbc0000, len 61440
+successfully mapped and registered 0x7f014bbb1000
+inserting original 0x7f0151600034 at location 0x7f014bbb0000
+copying 0x7f014bbb0709-0x7f014bbc073d to 0x7f014a622c09-0x7f014a632c3d, size 65588
+uffd unregistering addr 0x7f014bbb1000-0x7f014bbc0000, len 61440
+complete buffer: old offset 1851, new offset 3081
+copying before buffer: 1015 bytes from 0x7f014bbb0709-0x7f014bbb0b00 to 0x7f014a622c09-0x7f014a623000
+copying after buffer: 3081 bytes from 0x7f015160f45f-0x7f0151610068 to 0x7f014a632034-0x7f014a632c3d
+mmaping for uffd at 0x7f014a623000, length 61440
+uffd registering addr 0x7f014a623000-0x7f014a632000, len 61440
+successfully mapped and registered 0x7f014a623000
+inserting original 0x7f0151600034 at location 0x7f014a622000
+copying 0x7f01525ac034-0x7f01525b0034 to 0x7f014a619317-0x7f014a61d317, size 16384
+appropriate size copy, but can't find 0x7f01525ac000 in skiplist
+tas read 16384 bytes, page mask 7f014a619000
+reading from network at 0x7f014a619317, size 16384, key 7f014a619000, original 0x7f01525ac034
+old roll_addr 0x7f014a619317, prev_addr 0x7f014a6ade17, prev_len 52
+rolling, old original 0x7f01525a4034 new original 0x7f01525ac034
+small addr not found: prev 0x7f014a6ade4b, current 0x7f014a619317
+new roll_addr 0x7f014a61d317, size 49152, original 0x7f01525ac034 inserting at 0x7f014a611000
+copying 0x7f0150e5409c-0x7f0150e5809c to 0x7f014a679957-0x7f014a67d957, size 16384
+appropriate size copy, but can't find 0x7f0150e54000 in skiplist
+tas read 16384 bytes, page mask 7f014a679000
+reading from network at 0x7f014a679957, size 16384, key 7f014a679000, original 0x7f0150e5409c
+old roll_addr 0x7f014a679989, prev_addr 0x7f014a619317, prev_len 16384
+not rolling
+small addr not found: prev 0x7f014a61d317, current 0x7f014a679957
+new roll_addr 0x7f014a67d957, size 16384, original 0x7f0150e5409c inserting at 0x7f014a679000
+copying 0x7f0153d14034-0x7f0153d18034 to 0x7f014a664d17-0x7f014a668d17, size 16384
+appropriate size copy, but can't find 0x7f0153d14000 in skiplist
+tas read 16384 bytes, page mask 7f014a664000
+reading from network at 0x7f014a664d17, size 16384, key 7f014a664000, original 0x7f0153d14034
+old roll_addr 0x7f014a664d49, prev_addr 0x7f014a679957, prev_len 16384
+not rolling
+small addr not found: prev 0x7f014a67d957, current 0x7f014a664d17
+new roll_addr 0x7f014a668d17, size 16384, original 0x7f0153d14034 inserting at 0x7f014a664000
+copying 0x7f0152d70034-0x7f0152d74034 to 0x7f014a64b109-0x7f014a64f109, size 16384
+appropriate size copy, but can't find 0x7f0152d70000 in skiplist
+tas read 16384 bytes, page mask 7f014a64b000
+reading from network at 0x7f014a64b109, size 16384, key 7f014a64b000, original 0x7f0152d70034
+old roll_addr 0x7f014a6ead97, prev_addr 0x7f014a664d17, prev_len 16384
+not rolling
+small addr not found: prev 0x7f014a668d17, current 0x7f014a64b109
+new roll_addr 0x7f014a64f109, size 16384, original 0x7f0152d70034 inserting at 0x7f014a64b000
+moving 0x7f014a64b13b to 0x7f014a64b109, size 16334
+copying 0x7f0153540034-0x7f0153544034 to 0x7f014a72c2c9-0x7f014a7302c9, size 16384
+appropriate size copy, but can't find 0x7f0153540000 in skiplist
+tas read 16384 bytes, page mask 7f014a72c000
+reading from network at 0x7f014a72c2c9, size 16384, key 7f014a72c000, original 0x7f0153540034
+old roll_addr 0x7f014bb96897, prev_addr 0x7f014a64b109, prev_len 16384
+not rolling
+small addr not found: prev 0x7f014a64f109, current 0x7f014a72c2c9
+new roll_addr 0x7f014a7302c9, size 16384, original 0x7f0153540034 inserting at 0x7f014a72c000
+moving 0x7f014a72c2fb to 0x7f014a72c2c9, size 16334
+writing to linux from 0x7f014a622c09, bounded 0x7f014a622000, size 65588, entry 0x55dc8c49ebe0
+uffd unregistering addr 0x7f014a623000-0x7f014a632000, len 61440
+preparing encoding of size 88, new_len = 0, count = 65588, entry->len=65588
+encoding ready
+write len 88
+tas read 52 bytes, page mask 7f014a61d000
+copying 0x7f014a60d349-0x7f014a61d349 to 0x7f014a6227fb-0x7f014a6327fb, size 65536
+uffd unregistering addr 0x7f014a60e000-0x7f014a61d000, len 61440
+complete buffer: old offset 0, new offset 2043
+copying before buffer: 2053 bytes from 0x7f014a60d349-0x7f014a60db4e to 0x7f014a6227fb-0x7f014a623000
+copying after buffer: 2043 bytes from 0x7f01525af839-0x7f01525b0034 to 0x7f014a632000-0x7f014a6327fb
+mmaping for uffd at 0x7f014a623000, length 61440
+uffd registering addr 0x7f014a623000-0x7f014a632000, len 61440
+successfully mapped and registered 0x7f014a623000
+inserting original 0x7f01525a0034 at location 0x7f014a622000
+copying 0x7f014a6227c9-0x7f014a6327fd to 0x7f014a68aa09-0x7f014a69aa3d, size 65588
+uffd unregistering addr 0x7f014a623000-0x7f014a632000, len 61440
+complete buffer: old offset 2043, new offset 2569
+copying before buffer: 1527 bytes from 0x7f014a6227c9-0x7f014a622dc0 to 0x7f014a68aa09-0x7f014a68b000
+copying after buffer: 2569 bytes from 0x7f01525af65f-0x7f01525b0068 to 0x7f014a69a034-0x7f014a69aa3d
+mmaping for uffd at 0x7f014a68b000, length 61440
+uffd registering addr 0x7f014a68b000-0x7f014a69a000, len 61440
+successfully mapped and registered 0x7f014a68b000
+inserting original 0x7f01525a0034 at location 0x7f014a68a000
+copying 0x7f0150e5809c-0x7f0150e5c09c to 0x7f014a67d957-0x7f014a681957, size 16384
+appropriate size copy, but can't find 0x7f0150e58000 in skiplist
+tas read 16384 bytes, page mask 7f014a67d000
+reading from network at 0x7f014a67d957, size 16384, key 7f014a67d000, original 0x7f0150e5809c
+old roll_addr 0x7f014a67d957, prev_addr 0x7f014a61d317, prev_len 52
+rolling, old original 0x7f0150e5409c new original 0x7f0150e5809c
+small addr not found: prev 0x7f014a61d34b, current 0x7f014a67d957
+new roll_addr 0x7f014a681957, size 32768, original 0x7f0150e5809c inserting at 0x7f014a679000
+copying 0x7f0153d18034-0x7f0153d1c034 to 0x7f014a668d17-0x7f014a66cd17, size 16384
+appropriate size copy, but can't find 0x7f0153d18000 in skiplist
+tas read 16384 bytes, page mask 7f014a668000
+reading from network at 0x7f014a668d17, size 16384, key 7f014a668000, original 0x7f0153d18034
+old roll_addr 0x7f014a668d17, prev_addr 0x7f014a67d957, prev_len 16384
+rolling, old original 0x7f0153d14034 new original 0x7f0153d18034
+small addr not found: prev 0x7f014a681957, current 0x7f014a668d17
+new roll_addr 0x7f014a66cd17, size 32768, original 0x7f0153d18034 inserting at 0x7f014a664000
+copying 0x7f0152d74034-0x7f0152d78034 to 0x7f014a64f0d7-0x7f014a6530d7, size 16384
+appropriate size copy, but can't find 0x7f0152d74000 in skiplist
+tas read 16384 bytes, page mask 7f014a64f000
+reading from network at 0x7f014a64f0d7, size 16384, key 7f014a64f000, original 0x7f0152d74034
+old roll_addr 0x7f014a64f109, prev_addr 0x7f014a668d17, prev_len 16384
+not rolling
+small addr not found: prev 0x7f014a66cd17, current 0x7f014a64f0d7
+new roll_addr 0x7f014a6530d7, size 16384, original 0x7f0152d74034 inserting at 0x7f014a64f000
+copying 0x7f0153544034-0x7f0153548034 to 0x7f014a730297-0x7f014a734297, size 16384
+appropriate size copy, but can't find 0x7f0153544000 in skiplist
+tas read 16384 bytes, page mask 7f014a730000
+reading from network at 0x7f014a730297, size 16384, key 7f014a730000, original 0x7f0153544034
+old roll_addr 0x7f014a7302c9, prev_addr 0x7f014a64f0d7, prev_len 16384
+not rolling
+small addr not found: prev 0x7f014a6530d7, current 0x7f014a730297
+new roll_addr 0x7f014a734297, size 16384, original 0x7f0153544034 inserting at 0x7f014a730000
+copying 0x7f015068009c-0x7f015068409c to 0x7f014bb9bcc9-0x7f014bb9fcc9, size 16384
+appropriate size copy, but can't find 0x7f0150680000 in skiplist
+tas read 16384 bytes, page mask 7f014bb9b000
+reading from network at 0x7f014bb9bcc9, size 16384, key 7f014bb9b000, original 0x7f015068009c
+old roll_addr 0x7f014bb96897, prev_addr 0x7f014a730297, prev_len 16384
+not rolling
+small addr not found: prev 0x7f014a734297, current 0x7f014bb9bcc9
+new roll_addr 0x7f014bb9fcc9, size 16384, original 0x7f015068009c inserting at 0x7f014bb9b000
+moving 0x7f014bb9bcfb to 0x7f014bb9bcc9, size 16334
+copying 0x7f0151de0068-0x7f0151de4068 to 0x7f014bbd9409-0x7f014bbdd409, size 16384
+appropriate size copy, but can't find 0x7f0151de0000 in skiplist
+tas read 16384 bytes, page mask 7f014bbd9000
+reading from network at 0x7f014bbd9409, size 16384, key 7f014bbd9000, original 0x7f0151de0068
+old roll_addr 0x7f014a6c2e17, prev_addr 0x7f014bb9bcc9, prev_len 16384
+not rolling
+small addr not found: prev 0x7f014bb9fcc9, current 0x7f014bbd9409
+new roll_addr 0x7f014bbdd409, size 16384, original 0x7f0151de0068 inserting at 0x7f014bbd9000
+moving 0x7f014bbd943b to 0x7f014bbd9409, size 16334
+writing to linux from 0x7f014a68aa09, bounded 0x7f014a68a000, size 65588, entry 0x55dc8c49ec30
+uffd unregistering addr 0x7f014a68b000-0x7f014a69a000, len 61440
+preparing encoding of size 88, new_len = 0, count = 65588, entry->len=65588
+encoding ready
+write len 88
+copying 0x7f0150e5c09c-0x7f0150e6009c to 0x7f014a681957-0x7f014a685957, size 16384
+appropriate size copy, but can't find 0x7f0150e5c000 in skiplist
+tas read 16384 bytes, page mask 7f014a681000
+reading from network at 0x7f014a681957, size 16384, key 7f014a681000, original 0x7f0150e5c09c
+old roll_addr 0x7f014a681957, prev_addr 0x7f014bbd9409, prev_len 16384
+rolling, old original 0x7f0150e5409c new original 0x7f0150e5c09c
+small addr not found: prev 0x7f014bbdd409, current 0x7f014a681957
+new roll_addr 0x7f014a685957, size 49152, original 0x7f0150e5c09c inserting at 0x7f014a679000
+copying 0x7f0153d1c034-0x7f0153d20034 to 0x7f014a66cd17-0x7f014a670d17, size 16384
+appropriate size copy, but can't find 0x7f0153d1c000 in skiplist
+tas read 16384 bytes, page mask 7f014a66c000
+reading from network at 0x7f014a66cd17, size 16384, key 7f014a66c000, original 0x7f0153d1c034
+old roll_addr 0x7f014a66cd17, prev_addr 0x7f014a681957, prev_len 16384
+rolling, old original 0x7f0153d14034 new original 0x7f0153d1c034
+small addr not found: prev 0x7f014a685957, current 0x7f014a66cd17
+new roll_addr 0x7f014a670d17, size 49152, original 0x7f0153d1c034 inserting at 0x7f014a664000
+copying 0x7f0152d78034-0x7f0152d7c034 to 0x7f014a6530d7-0x7f014a6570d7, size 16384
+appropriate size copy, but can't find 0x7f0152d78000 in skiplist
+tas read 16384 bytes, page mask 7f014a653000
+reading from network at 0x7f014a6530d7, size 16384, key 7f014a653000, original 0x7f0152d78034
+old roll_addr 0x7f014a6530d7, prev_addr 0x7f014a66cd17, prev_len 16384
+rolling, old original 0x7f0152d74034 new original 0x7f0152d78034
+small addr not found: prev 0x7f014a670d17, current 0x7f014a6530d7
+new roll_addr 0x7f014a6570d7, size 32768, original 0x7f0152d78034 inserting at 0x7f014a64f000
+copying 0x7f0153548034-0x7f015354c034 to 0x7f014a734297-0x7f014a738297, size 16384
+appropriate size copy, but can't find 0x7f0153548000 in skiplist
+tas read 16384 bytes, page mask 7f014a734000
+reading from network at 0x7f014a734297, size 16384, key 7f014a734000, original 0x7f0153548034
+old roll_addr 0x7f014a734297, prev_addr 0x7f014a6530d7, prev_len 16384
+rolling, old original 0x7f0153544034 new original 0x7f0153548034
+small addr not found: prev 0x7f014a6570d7, current 0x7f014a734297
+new roll_addr 0x7f014a738297, size 32768, original 0x7f0153548034 inserting at 0x7f014a730000
+copying 0x7f015068409c-0x7f015068809c to 0x7f014bb9fc97-0x7f014bba3c97, size 16384
+appropriate size copy, but can't find 0x7f0150684000 in skiplist
+tas read 16384 bytes, page mask 7f014bb9f000
+reading from network at 0x7f014bb9fc97, size 16384, key 7f014bb9f000, original 0x7f015068409c
+old roll_addr 0x7f014bb9fcc9, prev_addr 0x7f014a734297, prev_len 16384
+not rolling
+small addr not found: prev 0x7f014a738297, current 0x7f014bb9fc97
+new roll_addr 0x7f014bba3c97, size 16384, original 0x7f015068409c inserting at 0x7f014bb9f000
+copying 0x7f0151de4068-0x7f0151de8068 to 0x7f014bbdd3d7-0x7f014bbe13d7, size 16384
+appropriate size copy, but can't find 0x7f0151de4000 in skiplist
+tas read 16384 bytes, page mask 7f014bbdd000
+reading from network at 0x7f014bbdd3d7, size 16384, key 7f014bbdd000, original 0x7f0151de4068
+old roll_addr 0x7f014bbdd409, prev_addr 0x7f014bb9fc97, prev_len 16384
+not rolling
+small addr not found: prev 0x7f014bba3c97, current 0x7f014bbdd3d7
+new roll_addr 0x7f014bbe13d7, size 16384, original 0x7f0151de4068 inserting at 0x7f014bbdd000
+copying 0x7f0151610068-0x7f0151614068 to 0x7f014bb86349-0x7f014bb8a349, size 16384
+appropriate size copy, but can't find 0x7f0151610000 in skiplist
+tas read 16384 bytes, page mask 7f014bb86000
+reading from network at 0x7f014bb86349, size 16384, key 7f014bb86000, original 0x7f0151610068
+old roll_addr 0x7f014a6ade17, prev_addr 0x7f014bbdd3d7, prev_len 16384
+not rolling
+small addr not found: prev 0x7f014bbe13d7, current 0x7f014bb86349
+new roll_addr 0x7f014bb8a349, size 16384, original 0x7f0151610068 inserting at 0x7f014bb86000
+moving 0x7f014bb8637b to 0x7f014bb86349, size 16334
+tas read 52 bytes, page mask 7f014a685000
+copying 0x7f014a675989-0x7f014a685989 to 0x7f014a68adbb-0x7f014a69adbb, size 65536
+copying 0x7f014a68ad89-0x7f014a69adbd to 0x7f014a6b3b49-0x7f014a6c3b7d, size 65588
+appropriate size copy, but can't find 0x7f014a68a000 in skiplist
+tas read 52 bytes, page mask 7f014a670000
+copying 0x7f014a660d49-0x7f014a670d49 to 0x7f014a6753bb-0x7f014a6853bb, size 65536
+uffd unregistering addr 0x7f014a661000-0x7f014a670000, len 61440
+complete buffer: old offset 0, new offset 955
+copying before buffer: 3141 bytes from 0x7f014a660d49-0x7f014a66198e to 0x7f014a6753bb-0x7f014a676000
+copying after buffer: 955 bytes from 0x7f0153d1fc79-0x7f0153d20034 to 0x7f014a685000-0x7f014a6853bb
+mmaping for uffd at 0x7f014a676000, length 61440
+uffd registering addr 0x7f014a676000-0x7f014a685000, len 61440
+successfully mapped and registered 0x7f014a676000
+inserting original 0x7f0153d10034 at location 0x7f014a675000
+copying 0x7f014a675389-0x7f014a6853bd to 0x7f014a6c3b7d-0x7f014a6d3bb1, size 65588
+uffd unregistering addr 0x7f014a676000-0x7f014a685000, len 61440
+complete buffer: old offset 955, new offset 2941
+copying before buffer: 1155 bytes from 0x7f014a675389-0x7f014a67580c to 0x7f014a6c3b7d-0x7f014a6c4000
+copying after buffer: 2941 bytes from 0x7f0153d1f4eb-0x7f0153d20068 to 0x7f014a6d3034-0x7f014a6d3bb1
+mmaping for uffd at 0x7f014a6c4000, length 61440
+uffd registering addr 0x7f014a6c4000-0x7f014a6d3000, len 61440
+successfully mapped and registered 0x7f014a6c4000
+inserting original 0x7f0153d10034 at location 0x7f014a6c3000
+copying 0x7f0152d7c034-0x7f0152d80034 to 0x7f014a6570d7-0x7f014a65b0d7, size 16384
+appropriate size copy, but can't find 0x7f0152d7c000 in skiplist
+tas read 16384 bytes, page mask 7f014a657000
+reading from network at 0x7f014a6570d7, size 16384, key 7f014a657000, original 0x7f0152d7c034
+old roll_addr 0x7f014a6570d7, prev_addr 0x7f014a670d17, prev_len 52
+rolling, old original 0x7f0152d74034 new original 0x7f0152d7c034
+small addr not found: prev 0x7f014a670d4b, current 0x7f014a6570d7
+new roll_addr 0x7f014a65b0d7, size 49152, original 0x7f0152d7c034 inserting at 0x7f014a64f000
+copying 0x7f015354c034-0x7f0153550034 to 0x7f014a738297-0x7f014a73c297, size 16384
+appropriate size copy, but can't find 0x7f015354c000 in skiplist
+tas read 16384 bytes, page mask 7f014a738000
+reading from network at 0x7f014a738297, size 16384, key 7f014a738000, original 0x7f015354c034
+old roll_addr 0x7f014a738297, prev_addr 0x7f014a6570d7, prev_len 16384
+rolling, old original 0x7f0153544034 new original 0x7f015354c034
+small addr not found: prev 0x7f014a65b0d7, current 0x7f014a738297
+new roll_addr 0x7f014a73c297, size 49152, original 0x7f015354c034 inserting at 0x7f014a730000
+copying 0x7f015068809c-0x7f015068c09c to 0x7f014bba3c97-0x7f014bba7c97, size 16384
+appropriate size copy, but can't find 0x7f0150688000 in skiplist
+tas read 16384 bytes, page mask 7f014bba3000
+reading from network at 0x7f014bba3c97, size 16384, key 7f014bba3000, original 0x7f015068809c
+old roll_addr 0x7f014bba3c97, prev_addr 0x7f014a738297, prev_len 16384
+rolling, old original 0x7f015068409c new original 0x7f015068809c
+small addr not found: prev 0x7f014a73c297, current 0x7f014bba3c97
+new roll_addr 0x7f014bba7c97, size 32768, original 0x7f015068809c inserting at 0x7f014bb9f000
+copying 0x7f0151de8068-0x7f0151dec068 to 0x7f014bbe13d7-0x7f014bbe53d7, size 16384
+appropriate size copy, but can't find 0x7f0151de8000 in skiplist
+tas read 16384 bytes, page mask 7f014bbe1000
+reading from network at 0x7f014bbe13d7, size 16384, key 7f014bbe1000, original 0x7f0151de8068
+old roll_addr 0x7f014bbe13d7, prev_addr 0x7f014bba3c97, prev_len 16384
+rolling, old original 0x7f0151de4068 new original 0x7f0151de8068
+small addr not found: prev 0x7f014bba7c97, current 0x7f014bbe13d7
+new roll_addr 0x7f014bbe53d7, size 32768, original 0x7f0151de8068 inserting at 0x7f014bbdd000
+copying 0x7f0151614068-0x7f0151618068 to 0x7f014bb8a317-0x7f014bb8e317, size 16384
+appropriate size copy, but can't find 0x7f0151614000 in skiplist
+tas read 16384 bytes, page mask 7f014bb8a000
+reading from network at 0x7f014bb8a317, size 16384, key 7f014bb8a000, original 0x7f0151614068
+old roll_addr 0x7f014bb8a349, prev_addr 0x7f014bbe13d7, prev_len 16384
+not rolling
+small addr not found: prev 0x7f014bbe53d7, current 0x7f014bb8a317
+new roll_addr 0x7f014bb8e317, size 16384, original 0x7f0151614068 inserting at 0x7f014bb8a000
+copying 0x7f01525b0068-0x7f01525b4068 to 0x7f014bbb0a89-0x7f014bbb4a89, size 16384
+appropriate size copy, but can't find 0x7f01525b0000 in skiplist
+tas read 16384 bytes, page mask 7f014bbb0000
+reading from network at 0x7f014bbb0a89, size 16384, key 7f014bbb0000, original 0x7f01525b0068
+old roll_addr 0x7f014a61d317, prev_addr 0x7f014bb8a317, prev_len 16384
+not rolling
+small addr not found: prev 0x7f014bb8e317, current 0x7f014bbb0a89
+new roll_addr 0x7f014bbb4a89, size 16384, original 0x7f01525b0068 inserting at 0x7f014bbb0000
+moving 0x7f014bbb0abb to 0x7f014bbb0a89, size 16334
+writing to linux from 0x7f014a6b3b49, bounded 0x7f014a6b3000, size 131176, entry (nil)
+entry 0x7f014a6b3b49 not found
+write len 131176
+waking for page fault?
+page fault event
+handling fault at 0x7f014a6c4000, calling function

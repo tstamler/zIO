@@ -153,6 +153,7 @@ void dataplane_loop(struct dataplane_context *ctx)
       ctx->loadmon_cyc_busy += cyc - prev_cyc;
 
 
+    __sync_synchronize();
     ts = qman_timestamp(cyc);
 
     STATS_TS(start);

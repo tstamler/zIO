@@ -37,6 +37,18 @@
 #include "internal.h"
 #include "../tas/internal.h"
 
+uint64_t tas_get_buf_addr(int sockfd, void* buf)
+{
+	//need some more complexity to find the exact address
+	struct socket *s;
+	if(flextcp_fd_slookup(sockfd, &s) != 0){
+		return;
+	}
+	return (uint64_t) (s->data.connection.rx_buf_1);
+
+}
+
+
 ssize_t tas_recvmsg(int sockfd, struct msghdr *msg, int flags)
 {
   struct socket *s;
@@ -127,7 +139,7 @@ out:
   return ret;
 }
 
-static inline ssize_t recv_simple(int sockfd, void *buf, size_t len, int flags)
+static inline ssize_t recv_simple(int sockfd, void *buf, size_t len, int flags, uint64_t* ret_addr)
 {
   struct socket *s;
   struct flextcp_context *ctx;
@@ -175,9 +187,17 @@ static inline ssize_t recv_simple(int sockfd, void *buf, size_t len, int flags)
       goto out;
     }
   }
-
+  
   /* copy to provided buffer */
   off = 0;
+  
+  if(ret_addr){
+	 if(s->data.connection.rx_buf_2) *ret_addr = (uint64_t) (s->data.connection.rx_buf_2);
+	 else *ret_addr = (uint64_t) (s->data.connection.rx_buf_1);
+	 //fprintf(stderr, "returning %p, len %zu\n", s->data.connection.rx_buf_1, s->data.connection.rx_len_1);
+	 //fprintf(stderr, "second buf? %p, len %zu\n", s->data.connection.rx_buf_2, s->data.connection.rx_len_2);
+  }
+ 
   if (s->data.connection.rx_len_1 <= len) {
     memcpy(buf, s->data.connection.rx_buf_1, s->data.connection.rx_len_1);
     ret = off = s->data.connection.rx_len_1;
@@ -186,7 +206,10 @@ static inline ssize_t recv_simple(int sockfd, void *buf, size_t len, int flags)
     s->data.connection.rx_len_1 = s->data.connection.rx_len_2;
     s->data.connection.rx_buf_2 = NULL;
     s->data.connection.rx_len_2 = 0;
+
   }
+ 
+  
   len_2 = MIN(s->data.connection.rx_len_1, len - off);
   memcpy((uint8_t *) buf + ret, s->data.connection.rx_buf_1, len_2);
   ret += len_2;
@@ -394,14 +417,14 @@ out:
  *   - write, send, sendto  -->  sendmsg
  */
 
-ssize_t tas_read(int sockfd, void *buf, size_t len)
+ssize_t tas_read(int sockfd, void *buf, size_t len, uint64_t* ret_addr)
 {
-  return recv_simple(sockfd, buf, len, 0);
+  return recv_simple(sockfd, buf, len, 0, ret_addr);
 }
 
 ssize_t tas_recv(int sockfd, void *buf, size_t len, int flags)
 {
-  return recv_simple(sockfd, buf, len, flags);
+  return recv_simple(sockfd, buf, len, flags, 0);
 }
 
 ssize_t tas_recvfrom(int sockfd, void *buf, size_t len, int flags,
@@ -409,7 +432,7 @@ ssize_t tas_recvfrom(int sockfd, void *buf, size_t len, int flags,
 {
   ssize_t ret;
 
-  ret = recv_simple(sockfd, buf, len, flags);
+  ret = recv_simple(sockfd, buf, len, flags, 0);
 
   if (src_addr != NULL) {
     *addrlen = *addrlen;

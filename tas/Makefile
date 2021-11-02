@@ -8,9 +8,9 @@ INCDIR ?= $(PREFIX)/include
 CFLAGS += -std=gnu99 -O3 -g -Wall -I. -Iinclude/ -march=native -fno-omit-frame-pointer -fno-common -mno-avx512f #-Werror
 LDFLAGS += -pthread -g
 
-RTE_SDK ?= $(HOME)/dpdk/build
+RTE_SDK ?= /home/tstamler/dpdk/build
 DPDK_PMDS = mlx5
-EXTRA_LIBS_DPDK = -libverbs -lmlx5 #-lmnl
+EXTRA_LIBS_DPDK = -libverbs -lmlx5 -lmnl
 
 
 CFLAGS+= -I$(RTE_SDK)/include -I$(RTE_SDK)/include/dpdk
@@ -23,8 +23,9 @@ LIBS_DPDK+= -lrte_eal -lrte_mempool -lrte_mempool_ring \
 	    -lrte_hash -lrte_ring -lrte_kvargs -lrte_ethdev \
 	    -lrte_mbuf -lnuma -lrte_bus_pci -lrte_pci \
 	    -lrte_cmdline -lrte_timer -lrte_net \
-	    -lrte_bus_vdev -lrte_gso -lrte_kni -lrte_telemetry\
+	    -lrte_bus_vdev -lrte_gso -lrte_kni \
 	    -Wl,--no-whole-archive -ldl $(EXTRA_LIBS_DPDK)
+	    #-lrte_telemetry\
 
 LDLIBS += -lm -lpthread -lrt -ldl
 
@@ -38,6 +39,7 @@ STACK_OBJS = $(addprefix lib/tas/,init.o kernel.o conn.o connect.o)
 SOCKETS_OBJS = $(addprefix lib/sockets/,control.o transfer.o context.o manage_fd.o \
 	epoll.o)
 INTERPOSE_OBJS = $(addprefix lib/sockets/,interpose.o)
+COPY_INTERPOSE_OBJS = $(addprefix lib/sockets/,copy_interpose.o)
 CFLAGS += -I. -Ilib/tas/include -Ilib/sockets/include
 
 shared_objs = $(patsubst %.o,%.shared.o,$(1))
@@ -67,7 +69,7 @@ TESTS= \
 
 
 all: lib/libtas_sockets.so lib/libtas_interpose.so \
-	lib/libtas.so \
+	lib/libtas.so lib/copy_interpose.so \
 	tools/tracetool tools/statetool tools/scaletool \
 	tas/tas
 
@@ -129,6 +131,9 @@ lib/libtas_sockets.so: $(call shared_objs, \
 lib/libtas_interpose.so: $(call shared_objs, \
 	$(INTERPOSE_OBJS) $(SOCKETS_OBJS) $(STACK_OBJS) $(UTILS_OBJS))
 
+lib/copy_interpose.so: $(call shared_objs, \
+	$(COPY_INTERPOSE_OBJS) $(SOCKETS_OBJS) $(STACK_OBJS) $(UTILS_OBJS))
+
 lib/libtas.so: $(call shared_objs, $(UTILS_OBJS) $(STACK_OBJS))
 
 %.shared.o: %.c
@@ -142,7 +147,7 @@ clean:
 	rm -f *.o tas/*.o tas/fast/*.o tas/slow/*.o lib/utils/*.o \
 	  lib/tas/*.o lib/sockets/*.o tests/*.o tests/*/*.o tools/*.o \
 	  lib/libtas_sockets.so lib/libtas_interpose.so \
-	  lib/libtas.so \
+	  lib/libtas.so lib\copy_interpose.so \
 	  $(TESTS) \
 	  tools/tracetool tools/statetool tools/scaletool \
 	  tas/tas

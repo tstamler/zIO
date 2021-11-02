@@ -417,12 +417,12 @@ static inline void dctcp_rate_update(struct connection *c,
   }
   cc->act_rate = (7 * cc->act_rate + act_rate) / 8;
   act_rate = (act_rate >= cc->act_rate ? act_rate : cc->act_rate);
-
+#if 0 
   /* clamp rate to actually used rate * 1.2 */
   if (rate > (uint64_t) act_rate * 12 / 10) {
     rate = (uint64_t) act_rate * 12 / 10;
   }
-
+#endif
   /* Slow start */
   if (cc->slowstart) {
     if (c_drops == 0 && c_ecnb == 0 && c->cc_rexmits == 0) {

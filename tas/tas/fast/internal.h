@@ -46,7 +46,7 @@
     int trace_event2(uint16_t type, uint16_t len_1, const void *buf_1,
         uint16_t len_2, const void *buf_2);
 #endif
-//#define DATAPLANE_STATS
+#define DATAPLANE_STATS
 
 extern int exited;
 extern unsigned fp_cores_max;

@@ -65,7 +65,7 @@ int tas_getpeername(int sockfd, struct sockaddr *addr, socklen_t *addrlen);
 int tas_move_conn(int sockfd);
 
 
-ssize_t tas_read(int fd, void *buf, size_t count);
+ssize_t tas_read(int fd, void *buf, size_t count, uint64_t* ret_addr);
 
 ssize_t tas_recv(int sockfd, void *buf, size_t len, int flags);
 
@@ -87,6 +87,7 @@ ssize_t tas_sendmsg(int sockfd, const struct msghdr *msg, int flags);
 
 ssize_t tas_writev(int sockfd, const struct iovec *iov, int iovcnt);
 
+uint64_t tas_get_buf_addr(int sockfd, void* buf);
 
 int tas_epoll_create(int size);
 

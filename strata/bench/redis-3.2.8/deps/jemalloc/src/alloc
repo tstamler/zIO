@@ -1,0 +1,19 @@
+arena.c:		if (chunk_hooks->commit(chunk, chunksize, 0, map_bias <<
+arena.c:				chunk_hooks->decommit(chunk, chunksize, 0,
+arena.c:	} else if (chunk_hooks->merge(chunk, CHUNK_CEILING(oldsize), nchunk,
+arena.c:			decommitted = !chunk_hooks->decommit(chunk, chunksize,
+Binary file chunk.o matches
+chunk.c:	atomic_write_p(u.v, chunk_hooks->n);				\
+chunk.c:	    chunk_hooks->split(extent_node_addr_get(node),
+chunk.c:		if (chunk_hooks->split(ret, size + trailsize, size,
+chunk.c:	if (!committed && chunk_hooks->commit(ret, size, 0, size, arena->ind)) {
+chunk.c:		if (chunk_hooks->alloc == chunk_alloc_default) {
+chunk.c:			ret = chunk_hooks->alloc(new_addr, size, alignment,
+chunk.c:		if (config_valgrind && chunk_hooks->alloc !=
+chunk.c:	    committed && !chunk_hooks->merge(chunk, size,
+chunk.c:	    !chunk_hooks->merge(extent_node_addr_get(prev),
+chunk.c:	if (chunk_hooks->dalloc == chunk_dalloc_default) {
+chunk.c:		err = chunk_hooks->dalloc(chunk, size, committed, arena->ind);
+chunk.c:		committed = chunk_hooks->decommit(chunk, size, 0, size,
+chunk.c:	zeroed = !committed || !chunk_hooks->purge(chunk, size, 0, size,
+chunk.c:	return (chunk_hooks->purge(chunk, size, offset, length, arena->ind));
