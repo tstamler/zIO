@@ -8,7 +8,7 @@ char *g_dev_path[] = {
 	(char *)"/dev/dax0.0",
 	(char *)"/backup/mlfs_ssd",
 	(char *)"/backup/mlfs_hdd",
-	(char *)"/dev/dax1.0",
+	(char *)"/dev/dax3.0",
 };
 #else
 char *g_dev_path[] = {

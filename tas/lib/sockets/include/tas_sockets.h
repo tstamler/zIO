@@ -76,6 +76,8 @@ ssize_t tas_recvmsg(int sockfd, struct msghdr *msg, int flags);
 
 ssize_t tas_readv(int sockfd, const struct iovec *iov, int iovcnt);
 
+ssize_t tas_zio_write(int fd, const void *buf, size_t count, int flags); 
+
 ssize_t tas_write(int fd, const void *buf, size_t count);
 
 ssize_t tas_send(int sockfd, const void *buf, size_t len, int flags);

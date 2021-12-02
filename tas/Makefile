@@ -40,6 +40,8 @@ SOCKETS_OBJS = $(addprefix lib/sockets/,control.o transfer.o context.o manage_fd
 	epoll.o)
 INTERPOSE_OBJS = $(addprefix lib/sockets/,interpose.o)
 COPY_INTERPOSE_OBJS = $(addprefix lib/sockets/,copy_interpose.o)
+TAS_COPY_INTERPOSE_OBJS = $(addprefix lib/sockets/,tas_copy_interpose.o)
+ZIO_INTERPOSE_OBJS = $(addprefix lib/sockets/,zio_interpose.o)
 CFLAGS += -I. -Ilib/tas/include -Ilib/sockets/include
 
 shared_objs = $(patsubst %.o,%.shared.o,$(1))
@@ -68,8 +70,8 @@ TESTS= \
 	$(TESTS_AUTO_FULL)
 
 
-all: lib/libtas_sockets.so lib/libtas_interpose.so \
-	lib/libtas.so lib/copy_interpose.so \
+all: lib/libtas_sockets.so lib/libtas_interpose.so lib/zio_interpose.so \
+	lib/libtas.so lib/tas_copy_interpose.so lib/copy_interpose.so \
 	tools/tracetool tools/statetool tools/scaletool \
 	tas/tas
 
@@ -134,6 +136,12 @@ lib/libtas_interpose.so: $(call shared_objs, \
 lib/copy_interpose.so: $(call shared_objs, \
 	$(COPY_INTERPOSE_OBJS) $(SOCKETS_OBJS) $(STACK_OBJS) $(UTILS_OBJS))
 
+lib/tas_copy_interpose.so: $(call shared_objs, \
+	$(TAS_COPY_INTERPOSE_OBJS) $(SOCKETS_OBJS) $(STACK_OBJS) $(UTILS_OBJS))
+
+lib/zio_interpose.so: $(call shared_objs, \
+	$(ZIO_INTERPOSE_OBJS) $(SOCKETS_OBJS) $(STACK_OBJS) $(UTILS_OBJS))
+
 lib/libtas.so: $(call shared_objs, $(UTILS_OBJS) $(STACK_OBJS))
 
 %.shared.o: %.c
@@ -147,7 +155,7 @@ clean:
 	rm -f *.o tas/*.o tas/fast/*.o tas/slow/*.o lib/utils/*.o \
 	  lib/tas/*.o lib/sockets/*.o tests/*.o tests/*/*.o tools/*.o \
 	  lib/libtas_sockets.so lib/libtas_interpose.so \
-	  lib/libtas.so lib\copy_interpose.so \
+	  lib/libtas.so lib\copy_interpose.so lib\tas_copy_interpose.so \
 	  $(TESTS) \
 	  tools/tracetool tools/statetool tools/scaletool \
 	  tas/tas

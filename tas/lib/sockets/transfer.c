@@ -411,6 +411,89 @@ out:
   return ret;
 }
 
+
+ssize_t tas_zio_write(int sockfd, const void *buf, size_t len, int flags)
+{
+  struct socket *s;
+  struct flextcp_context *ctx;
+  ssize_t ret = 0;
+  size_t len_1, len_2;
+  void *dst_1, *dst_2;
+
+  if (flextcp_fd_slookup(sockfd, &s) != 0) {
+    errno = EBADF;
+    return -1;
+  }
+
+  /* not a connection, or not connected */
+  if (s->type != SOCK_CONNECTION ||
+      s->data.connection.status != SOC_CONNECTED ||
+      (s->data.connection.st_flags & CSTF_TXCLOSED) == CSTF_TXCLOSED)
+  {
+    errno = ENOTCONN;
+    ret = -1;
+    goto out;
+  }
+
+  /* return 0 if 0 length */
+  if (len == 0) {
+    goto out;
+  }
+
+  ctx = flextcp_sockctx_get();
+
+  /* make sure there is space in the transmit queue if the socket is
+   * non-blocking */
+  if ((s->flags & SOF_NONBLOCK) == SOF_NONBLOCK &&
+      flextcp_connection_tx_possible(ctx, &s->data.connection.c) != 0)
+  {
+    errno = EAGAIN;
+    ret = -1;
+    goto out;
+  }
+
+  /* allocate transmit buffer */
+  ret = flextcp_connection_tx_alloc2(&s->data.connection.c, len, &dst_1, &len_1,
+      &dst_2);
+  if (ret < 0) {
+    fprintf(stderr, "sendmsg: flextcp_connection_tx_alloc failed\n");
+    abort();
+  }
+
+  /* if tx buffer allocation failed, either block or poll context at least once
+   * to handle busy loops of send on non-blocking sockets. */
+  while (ret == 0) {
+    flextcp_sockctx_poll(ctx);
+
+    ret = flextcp_connection_tx_alloc2(&s->data.connection.c, len, &dst_1,
+        &len_1, &dst_2);
+    if (ret < 0) {
+      fprintf(stderr, "sendmsg: flextcp_connection_tx_alloc failed\n");
+      abort();
+    } else if (ret == 0 && (s->flags & SOF_NONBLOCK) == SOF_NONBLOCK) {
+      //fprintf(stderr, "EAGAIN because alloc failed\n");
+      errno = EAGAIN;
+      ret = -1;
+      goto out;
+    }
+  }
+  len_2 = ret - len_1;
+
+  /* copy into TX buffer */
+  //memcpy(dst_1, buf, len_1);
+  //memcpy(dst_2, (const uint8_t *) buf + len_1, len_2);
+
+  /* send out */
+  /* TODO: this should not block for non-blocking sockets */
+  while (flextcp_connection_tx_send(ctx, &s->data.connection.c, ret) != 0) {
+    flextcp_sockctx_poll(ctx);
+  }
+
+out:
+  flextcp_fd_release(sockfd);
+  return ret;
+}
+
 /******************************************************************************/
 /* map:
  *   - read, recv, recvfrom  -->  recvmsg

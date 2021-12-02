@@ -46,8 +46,8 @@
 #include <tas_sockets.h>
 #include <skiplist.h>
 
-#define OPT_THRESHOLD 0xfffffffffffffffff
-//#define OPT_THRESHOLD 8191
+//#define OPT_THRESHOLD 0xfffffffffffffffff
+#define OPT_THRESHOLD 4095
 
 #define PAGE_MASK 0xfffffffff000
 
@@ -994,6 +994,7 @@ static void init(void)
       abort();
   }
 
+  printf("launching stats\n");
   if (pthread_create(&stats_thread, NULL, print_stats, 0) != 0){
       perror("stats thread create");
       abort();
