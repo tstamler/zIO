@@ -40,6 +40,7 @@ SOCKETS_OBJS = $(addprefix lib/sockets/,control.o transfer.o context.o manage_fd
 	epoll.o)
 INTERPOSE_OBJS = $(addprefix lib/sockets/,interpose.o)
 COPY_INTERPOSE_OBJS = $(addprefix lib/sockets/,copy_interpose.o)
+PAGE_FAULT_OBJS = $(addprefix lib/sockets/,page_fault_test.o)
 TAS_COPY_INTERPOSE_OBJS = $(addprefix lib/sockets/,tas_copy_interpose.o)
 ZIO_INTERPOSE_OBJS = $(addprefix lib/sockets/,zio_interpose.o)
 CFLAGS += -I. -Ilib/tas/include -Ilib/sockets/include
@@ -72,6 +73,7 @@ TESTS= \
 
 all: lib/libtas_sockets.so lib/libtas_interpose.so lib/zio_interpose.so \
 	lib/libtas.so lib/tas_copy_interpose.so lib/copy_interpose.so \
+	lib/page_fault_test.so \
 	tools/tracetool tools/statetool tools/scaletool \
 	tas/tas
 
@@ -136,6 +138,9 @@ lib/libtas_interpose.so: $(call shared_objs, \
 lib/copy_interpose.so: $(call shared_objs, \
 	$(COPY_INTERPOSE_OBJS) $(SOCKETS_OBJS) $(STACK_OBJS) $(UTILS_OBJS))
 
+lib/page_fault_test.so: $(call shared_objs, \
+	$(PAGE_FAULT_OBJS) $(SOCKETS_OBJS) $(STACK_OBJS) $(UTILS_OBJS))
+
 lib/tas_copy_interpose.so: $(call shared_objs, \
 	$(TAS_COPY_INTERPOSE_OBJS) $(SOCKETS_OBJS) $(STACK_OBJS) $(UTILS_OBJS))
 
@@ -156,6 +161,7 @@ clean:
 	  lib/tas/*.o lib/sockets/*.o tests/*.o tests/*/*.o tools/*.o \
 	  lib/libtas_sockets.so lib/libtas_interpose.so \
 	  lib/libtas.so lib\copy_interpose.so lib\tas_copy_interpose.so \
+	  lib/page_fault_test.so \
 	  $(TESTS) \
 	  tools/tracetool tools/statetool tools/scaletool \
 	  tas/tas
