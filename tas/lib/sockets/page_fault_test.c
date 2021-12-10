@@ -47,7 +47,7 @@
 #include <skiplist.h>
 
 //#define OPT_THRESHOLD 0xfffffffffffffffff
-#define OPT_THRESHOLD 4095
+#define OPT_THRESHOLD 8192
 
 #define PAGE_MASK 0xfffffffff000
 
@@ -303,19 +303,27 @@ ssize_t read(int sockfd, void *buf, size_t count)
   ssize_t ret = 0;
   static void* prev_addr, *prev_orig; //, *max_addr;
   static size_t prev_len;
-  uint64_t original;
+  uint64_t original, ret2;
   ensure_init();
   //if ((ret = tas_read(sockfd, buf, count, &original)) == -1 && errno == EBADF) {
   //  return libc_read(sockfd, buf, count);
   //}
   	//ret = libc_read(sockfd, buf, count);
-  	ret = libc_recv(sockfd, buf, count, MSG_WAITALL);
+  if( count > OPT_THRESHOLD) {	
+        ret = libc_recv(sockfd, buf, count, MSG_WAITALL);
  	if (ret == -1){
 	       perror("linux read");
 		return ret;
 	}
+  } else {
+	ret = libc_read(sockfd, buf, count);
+ 	if (ret == -1){
+	       perror("linux read");
+		return ret;
+	}
+  }
 
-  LOG("tas read %zu bytes, page mask %lx, socket %d\n", ret, ((uint64_t) buf) & PAGE_MASK, sockfd);
+  LOG("tas read %zu  out of %zu bytes, page mask %lx, socket %d\n", ret, count, ((uint64_t) buf) & PAGE_MASK, sockfd);
   if(ret > OPT_THRESHOLD){
 	 
 	 //if((uint64_t) original > (uint64_t) max_addr) max_addr = original;
@@ -326,8 +334,8 @@ ssize_t read(int sockfd, void *buf, size_t count)
 	 //uint64_t original = tas_get_buf_addr(sockfd, buf); 
 	 LOG( "reading from network at %p, size %zu, key %lx, original %p\n", buf, ret, ((uint64_t) buf) & PAGE_MASK, (uint64_t) buf);
 	
-	 ret = mmap(((void*)(dest_bounded + 4096)), register_len, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_FIXED | MAP_ANONYMOUS, -1, 0);
-	  if(ret != (dest_bounded + 4096)){
+	 ret2 = mmap(((void*)(dest_bounded + 4096)), register_len, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_FIXED | MAP_ANONYMOUS, -1, 0);
+	  if(ret2 != (dest_bounded + 4096)){
 			fprintf(stderr, "bad mmap return %p... parameters %p, %zu\n", ret, dest_bounded + 4096, register_len);
 			perror("memcpy mmap");
 			abort();
@@ -335,7 +343,7 @@ ssize_t read(int sockfd, void *buf, size_t count)
 
 		struct uffdio_register uffdio_register;
 		uffdio_register.range.start = dest_bounded + 4096;
-		uffdio_register.range.len = register_len;
+		uffdio_register.range.len = register_len - 4096;
 		uffdio_register.mode = UFFDIO_REGISTER_MODE_MISSING;
 	        uffdio_register.ioctls = 0;
 		
@@ -347,7 +355,6 @@ ssize_t read(int sockfd, void *buf, size_t count)
 
 
 	 skiplist_insert(&addr_list, ((uint64_t) buf) & PAGE_MASK, buf, count, 0);
-	 
 	 
 	 return ret;
 	 
