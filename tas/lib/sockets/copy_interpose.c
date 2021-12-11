@@ -475,7 +475,7 @@ ssize_t write(int sockfd, const void *buf, size_t count)
 	skiplist_delete(&addr_list, ((uint64_t) buf) & PAGE_MASK);
     	LOG("write from %p len %zu out of %zu\n", entry->orig, entry->len, count);
 
-	ret = libc_write(sockfd, side_buffer, count);
+	ret = libc_write(sockfd, entry->orig, count);
 
 	LOG("actually wrote %zu\n", ret);
 
