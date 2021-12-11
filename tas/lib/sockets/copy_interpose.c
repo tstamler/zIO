@@ -47,7 +47,7 @@
 #include <skiplist.h>
 
 //#define OPT_THRESHOLD 0xfffffffffffffffff
-#define OPT_THRESHOLD 4095
+#define OPT_THRESHOLD 8192
 
 #define PAGE_MASK 0xfffffffff000
 
@@ -80,6 +80,8 @@ struct addr_track {
 };
 
 struct addr_track roll_addr[2048];
+
+uint8_t side_buffer[1024*1024*1024];
 
 uint64_t num_fast_writes, num_slow_writes, num_fast_copy, num_slow_copy, num_faults;
 
@@ -309,21 +311,26 @@ ssize_t read(int sockfd, void *buf, size_t count)
   //  return libc_read(sockfd, buf, count);
   //}
   	//ret = libc_read(sockfd, buf, count);
-  	ret = libc_recv(sockfd, buf, count, MSG_WAITALL);
+
+
+  LOG("tas read %zu bytes, page mask %lx, socket %d\n", ret, ((uint64_t) buf) & PAGE_MASK, sockfd);
+  if(count > OPT_THRESHOLD){
+  //if(ret > OPT_THRESHOLD){
+	LOG("receiving data\n");
+	ret = libc_recv(sockfd, buf, count, MSG_WAITALL);
  	if (ret == -1){
 	       perror("linux read");
 		return ret;
-	}
-
-  LOG("tas read %zu bytes, page mask %lx, socket %d\n", ret, ((uint64_t) buf) & PAGE_MASK, sockfd);
-  if(ret > OPT_THRESHOLD){
-	 
+	} 
 	 //if((uint64_t) original > (uint64_t) max_addr) max_addr = original;
 
 	 //uint64_t original = tas_get_buf_addr(sockfd, buf); 
 	 LOG( "reading from network at %p, size %zu, key %lx, original %p\n", buf, ret, ((uint64_t) buf) & PAGE_MASK, (uint64_t) buf);
 	 
 	 skiplist_insert(&addr_list, ((uint64_t) buf) & PAGE_MASK, buf, count, 0);
+	 
+	 LOG("got and inserted %zu out of %zu\n", ret, count);
+	 
 	 return ret;
 	 
 	 
@@ -353,7 +360,10 @@ ssize_t read(int sockfd, void *buf, size_t count)
 	 uint64_t old_addr = (roll_addr[sockfd].last_addr - roll_addr[sockfd].size) & PAGE_MASK;
 	 LOG("new roll_addr %p, size %zu, original %p inserting at %p\n", roll_addr[sockfd].last_addr, roll_addr[sockfd].size, buf, old_addr);
 	 skiplist_insert(&addr_list, old_addr, roll_addr[sockfd].original, roll_addr[sockfd].size, 0); 
+  } else {
+    return libc_read(sockfd, buf, count);
   }
+
   if(((uint64_t) buf - ret) == prev_addr){
 	prev_len += ret;	
   } else {
@@ -465,7 +475,7 @@ ssize_t write(int sockfd, const void *buf, size_t count)
 	skiplist_delete(&addr_list, ((uint64_t) buf) & PAGE_MASK);
     	LOG("write from %p len %zu out of %zu\n", entry->orig, entry->len, count);
 
-	ret = libc_write(sockfd, entry->orig, count);
+	ret = libc_write(sockfd, side_buffer, count);
 
 	LOG("actually wrote %zu\n", ret);
 
@@ -682,10 +692,10 @@ void* memcpy (void* dest, const void* src, size_t n){
 	        uffdio_register.ioctls = 0;
 		
 		LOG("uffd registering addr %p-%p, len %zu\n", dest_bounded + 4096, dest_bounded + 4096 + register_len, register_len);
-	    	if (ioctl(uffd, UFFDIO_REGISTER, &uffdio_register) == -1) {
-			perror("ioctl uffdio_register");
-			abort();
-		}
+	    	//if (ioctl(uffd, UFFDIO_REGISTER, &uffdio_register) == -1) {
+		//	perror("ioctl uffdio_register");
+		//	abort();
+		//}
 		LOG("successfully mapped and registered %p\n", dest_bounded + 4096);
 		//memcpy((dest_bounded+4096), src, 32);
 
@@ -694,6 +704,7 @@ void* memcpy (void* dest, const void* src, size_t n){
 		skiplist_insert(&addr_list, dest_bounded, original, n, offset);
 		//fprintf(stderr, "inserting %lx ret %d\n", ((uint64_t) dest) & PAGE_MASK, ret);
 		//skiplist_dump(&addr_list);
+		libc_memcpy(dest, src, 64);
 done:
 		prev_start = dest;
 		prev_end = dest + n;
@@ -720,6 +731,19 @@ done:
 
 void free(void* ptr){
 
+	uint64_t ptr_bounded = (uint64_t) ptr & PAGE_MASK;
+	snode* entry = skiplist_search(&addr_list, ptr_bounded);
+
+	if(entry){
+		if(entry->orig == ptr) {
+			//mark for later free
+			entry->free = 1;
+			return;
+		} else {
+			skiptlist_delete(&addr_list, ptr_bounded);
+		}
+	}
+	return libc_free(ptr);
 }
 
 void* memmove (void* dest, const void* src, size_t n){
