@@ -8,7 +8,7 @@ INCDIR ?= $(PREFIX)/include
 CFLAGS += -std=gnu99 -O3 -g -Wall -I. -Iinclude/ -march=native -fno-omit-frame-pointer -fno-common -mno-avx512f #-Werror
 LDFLAGS += -pthread -g
 
-RTE_SDK ?= /home/tstamler/dpdk/build
+RTE_SDK ?= ${HOME}/dpdk/build
 DPDK_PMDS = mlx5
 EXTRA_LIBS_DPDK = -libverbs -lmlx5 -lmnl
 
@@ -17,7 +17,7 @@ CFLAGS+= -I$(RTE_SDK)/include -I$(RTE_SDK)/include/dpdk
 CFLAGS+= -I$(RTE_SDK)/include/x86_64-linux-gnu/dpdk/
 LDFLAGS+= -L$(RTE_SDK)/lib/
 
-LIBS_DPDK= -Wl,--whole-archive
+LIBS_DPDK= -Wl,--whole-archive -Wl,-rpath=$(abspath $(RTE_SDK)/lib)
 LIBS_DPDK+= $(addprefix -lrte_pmd_,$(DPDK_PMDS))
 LIBS_DPDK+= -lrte_eal -lrte_mempool -lrte_mempool_ring \
 	    -lrte_hash -lrte_ring -lrte_kvargs -lrte_ethdev \
@@ -43,6 +43,7 @@ COPY_INTERPOSE_OBJS = $(addprefix lib/sockets/,copy_interpose.o)
 PAGE_FAULT_OBJS = $(addprefix lib/sockets/,page_fault_test.o)
 TAS_COPY_INTERPOSE_OBJS = $(addprefix lib/sockets/,tas_copy_interpose.o)
 ZIO_INTERPOSE_OBJS = $(addprefix lib/sockets/,zio_interpose.o)
+MEM_COUNTER_OBJS = $(addprefix lib/sockets/,mem_counter.o)
 CFLAGS += -I. -Ilib/tas/include -Ilib/sockets/include
 
 shared_objs = $(patsubst %.o,%.shared.o,$(1))
@@ -73,7 +74,7 @@ TESTS= \
 
 all: lib/libtas_sockets.so lib/libtas_interpose.so lib/zio_interpose.so \
 	lib/libtas.so lib/tas_copy_interpose.so lib/copy_interpose.so \
-	lib/page_fault_test.so \
+	lib/libmem_counter.so lib/page_fault_test.so \
 	tools/tracetool tools/statetool tools/scaletool \
 	tas/tas
 
@@ -147,6 +148,9 @@ lib/tas_copy_interpose.so: $(call shared_objs, \
 lib/zio_interpose.so: $(call shared_objs, \
 	$(ZIO_INTERPOSE_OBJS) $(SOCKETS_OBJS) $(STACK_OBJS) $(UTILS_OBJS))
 
+lib/libmem_counter.so: $(call shared_objs, \
+	$(MEM_COUNTER_OBJS) $(SOCKETS_OBJS) $(STACK_OBJS) $(UTILS_OBJS))
+
 lib/libtas.so: $(call shared_objs, $(UTILS_OBJS) $(STACK_OBJS))
 
 %.shared.o: %.c
@@ -161,7 +165,7 @@ clean:
 	  lib/tas/*.o lib/sockets/*.o tests/*.o tests/*/*.o tools/*.o \
 	  lib/libtas_sockets.so lib/libtas_interpose.so \
 	  lib/libtas.so lib\copy_interpose.so lib\tas_copy_interpose.so \
-	  lib/page_fault_test.so \
+	  lib/page_fault_test.so lib/mem_counter.so \
 	  $(TESTS) \
 	  tools/tracetool tools/statetool tools/scaletool \
 	  tas/tas
