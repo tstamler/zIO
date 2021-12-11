@@ -35,19 +35,16 @@
 #include <linux/userfaultfd.h>
 #include <poll.h>
 #include <pthread.h>
+#include <skiplist.h>
 #include <sys/ioctl.h>
 #include <sys/mman.h>
 #include <sys/select.h>
 #include <sys/stat.h>
 #include <sys/syscall.h>
 #include <sys/types.h>
-#include <unistd.h>
-
-#include <skiplist.h>
-#include <utils.h>
-
-#include <pthread.h>
 #include <time.h>
+#include <unistd.h>
+#include <utils.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -79,46 +76,18 @@ static ssize_t (*libc_sendto)(int sockfd, const void *buf, size_t len,
                               socklen_t addrlen);
 static ssize_t (*libc_sendmsg)(int sockfd, const struct msghdr *msg, int flags);
 
-int memcpy_cnt;
-int memmove_cnt;
-int recv_cnt;
-int write_cnt;
-
-size_t total_size_copied;
-size_t total_size_moved;
-
-struct timespec begin;
-
-pthread_mutex_t mutex;
-
-void print(void *dest, const void *src, size_t n) {
-  struct timespec ts;
-  clock_gettime(CLOCK_MONOTONIC, &ts);
-  /* fprintf (stdout, "At %ld\n", (ts.tv_sec - begin.tv_sec) * 1000000000 + */
-  /* 	   (ts.tv_nsec - begin.tv_nsec)); */
-  fprintf(stdout, "dest: %p, src: %p, size: %lu\n", dest, src, n);
-  fprintf(stdout, "src content: %s\n", (const char *)src);
-  fprintf(stdout, "memcpy: %d, memmove: %d\n", memcpy_cnt, memmove_cnt);
-  fprintf(stdout, "total_size_copied: %ld, total_size_moved: %ld\n",
-          total_size_copied, total_size_moved);
-  fflush(stdout);
-}
-
 int eq_(const char *s1, const char *s2, size_t n) {
-  if (!s1 || !s2)
-    return 0;
+  if (!s1 || !s2) return 0;
 
   int i = 0;
   for (i = 0; i < n; i++) {
-    if (s1[i] != s2[i])
-      return 0;
+    if (s1[i] != s2[i]) return 0;
   }
   return 1;
 }
 
 int contain_(const char *s1, const char *s2, size_t s1_len, size_t s2_len) {
-  if (!s1 || !s2)
-    return 0;
+  if (!s1 || !s2) return 0;
 
   int i;
   for (i = 0; i < s1_len; i++) {
@@ -133,114 +102,77 @@ int contain_(const char *s1, const char *s2, size_t s1_len, size_t s2_len) {
 }
 
 #define ALWAYS_CHECK 0
-#define OPT_THRESHOLD 0xfffffffffffffffff
+#define KEYWORD "My_data"
+#define KEYWORD_LEN 7
+#define OPT_THRESHOLD 4096 //65535  // 0xfffffffffffffffff
 
-#define BASIC_CONDITION (eq_(src, "My_data", 7ul))
+#define PAGE_MASK 0xfffffffff000
 
-#define RADOS_CONDITION (
-
-#define GRPC_KV_CONDITION (eq_(src, "key", 3ul) || eq_(src, "value", 5ul))
-
-#define TENSOR_CONDITION (/*eq_ (src, "mnist", 5ul)*/ n == 3548)
-
-#define FILTER_CONDITION (BASIC_CONDITION)
+#define print(addr1, addr2, len)                                              \
+  do {                                                                        \
+    const int is_only_addr1 = (addr1 && !addr2);                              \
+    const int is_only_addr2 = (!addr1 && addr2);                              \
+    if (is_only_addr1) {                                                      \
+      fprintf(stdout, "%s len:%zu %p(%lu)\n", __func__, len, addr1,           \
+              (uint64_t)addr1 &PAGE_MASK);                                    \
+    } else if (is_only_addr2) {                                               \
+      fprintf(stdout, "%s len:%zu %p(%lu)\n", __func__, len, addr2,           \
+              (uint64_t)addr2 &PAGE_MASK);                                    \
+    } else {                                                                  \
+      fprintf(stdout, "%s len:%zu %p(%lu)->%p(%lu)\n", __func__, len, addr1,  \
+              (uint64_t)addr1 &PAGE_MASK, addr2, (uint64_t)addr2 &PAGE_MASK); \
+    }                                                                         \
+  } while (0)
 
 void *memcpy(void *dest, const void *src, size_t n) {
-
-  pthread_mutex_lock(&mutex);
-
   ensure_init();
 
-  int off = 0;
-  if ((off = contain_(src, "My_data", n, 7)) || n > OPT_THRESHOLD) {
-    ++memcpy_cnt;
-    total_size_copied += n;
-    print(dest, src, n);
+  const char can_print =
+     contain_(src, KEYWORD, n, KEYWORD_LEN) || n > OPT_THRESHOLD;
 
-    goto out;
+  if (can_print) {
+    print(src, dest, n);
   }
 
-  /* if ((off = contain_ (src, "$$", n, 2))) */
-  /*   { */
-  /* 	++memcpy_cnt; */
-  /* 	total_size_copied += n; */
-  /* 	print (dest, src + off, n); */
-
-  /* 	goto out; */
-  /*   } */
-
-  /* if (n >= 4096) */
-  /*   { */
-  /* 	++memcpy_cnt; */
-  /* 	total_size_copied += n; */
-  /* 	print (dest, src, n); */
-
-  /* 	goto out; */
-  /*   } */
-
-out:
-  pthread_mutex_unlock(&mutex);
   return libc_memcpy(dest, src, n);
 }
 
 void *memmove(void *dest, const void *src, size_t n) {
-
-  pthread_mutex_lock(&mutex);
   ensure_init();
 
-  int off = 0;
-  if ((off = contain_(src, "My_data", n, 7)) || n > OPT_THRESHOLD) {
-    ++memmove_cnt;
-    total_size_moved += n;
-    print(dest, src, n);
+  const char can_print =
+      contain_(src, KEYWORD, n, KEYWORD_LEN) || n > OPT_THRESHOLD;
+      
+  if (can_print) {
+    print(src, dest, n);
   }
 
-  pthread_mutex_unlock(&mutex);
   return libc_memmove(dest, src, n);
 }
 
 ssize_t write(int sockfd, const void *buf, size_t count) {
   ensure_init();
 
-  /* if (contain_ ((const char *)buf, "head", count, 4)) { */
-  /*   fprintf (stdout, "write %d %lu %s\n", */
-  /* 	       sockfd, count, (char *)buf); */
-  /* } */
+  const char can_print =
+     contain_(buf, KEYWORD, count, KEYWORD_LEN) || count > OPT_THRESHOLD;
+      
+  if (can_print) {
+    print(buf, 0, count);
+  }
 
-  ssize_t ret = libc_write(sockfd, buf, count);
-
-  int off = 0;
-  //    if ((off = contain_(buf, "My_data", count, 7))) {
-  fprintf(stdout, "write data %ld %s\n", ret, (const char *)buf);
-  //    }
-
-  return ret;
+  return libc_write(sockfd, buf, count);
 }
 ssize_t pwrite(int sockfd, const void *buf, size_t count, off_t offset) {
-
-  pthread_mutex_lock(&mutex);
-
   ensure_init();
-  /*   if (count >= OPT_THRESHOLD && strncmp ((char *)buf, "My data", 7) == 0)
-       {
-       } */
 
-  ssize_t ret = libc_pwrite(sockfd, buf, count, offset);
-
-  int off = 0;
-  if ((off = contain_(buf, "My_data", count, 7))) {
-    fprintf(stdout, "%s %lu %*.s\n", __func__, ret, 10, (char *)buf + off);
-    goto out;
+  const char can_print =
+      contain_(buf, KEYWORD, count, KEYWORD_LEN) || count > OPT_THRESHOLD;
+      
+  if (can_print) {
+    print(buf, 0, count);
   }
 
-  if ((off = contain_(buf, "7777777", count, 7))) {
-    fprintf(stdout, "%s %lu %*.s\n", __func__, ret, 10, (char *)buf + off);
-    goto out;
-  }
-
-out:
-  pthread_mutex_unlock(&mutex);
-  return ret;
+  return libc_pwrite(sockfd, buf, count, offset);
 }
 
 ssize_t writev(int sockfd, const struct iovec *iov, int iovcnt) {
@@ -250,10 +182,10 @@ ssize_t writev(int sockfd, const struct iovec *iov, int iovcnt) {
 
   int i;
   for (i = 0; i < iovcnt; i++) {
-    int off = 0;
-    if ((off = contain_((const char *)iov->iov_base, "zz", iov->iov_len, 2))) {
-      fprintf(stdout, "writev %d: %lu %s\n", i, iov->iov_len,
-              (const char *)iov->iov_base + off);
+    const char can_print = contain_(iov->iov_base, KEYWORD, iov->iov_len, KEYWORD_LEN) ||
+        iov->iov_len > OPT_THRESHOLD;
+    if (can_print) {
+    print(iov->iov_base, 0, iov->iov_len);
     }
   }
 
@@ -267,56 +199,58 @@ ssize_t pwritev(int sockfd, const struct iovec *iov, int iovcnt, off_t offset) {
                    } */
   ssize_t ret = libc_pwritev(sockfd, iov, iovcnt, offset);
 
-  fprintf(stdout, "pwritev %ld\n", ret);
+  int i;
+  for (i = 0; i < iovcnt; i++) {
+    const char can_print = contain_(iov->iov_base, KEYWORD, iov->iov_len, KEYWORD_LEN) ||
+        iov->iov_len > OPT_THRESHOLD;
+    if (can_print) {
+    print(iov->iov_base, 0, iov->iov_len);
+    }
+  }
 
   return ret;
 }
 
 ssize_t read(int fd, void *buf, size_t count) {
-
-  pthread_mutex_lock(&mutex);
-
   ensure_init();
 
   ssize_t ret = libc_read(fd, buf, count);
 
-  if (contain_(buf, "My_data", count, 7)) {
-    fprintf(stdout, "%s %lu %s\n", __func__, ret, (const char *)buf);
+  const char can_print =
+      contain_(buf, KEYWORD, count, KEYWORD_LEN) || count > OPT_THRESHOLD;
+      
+  if (can_print) {
+    print(buf, 0, count);
   }
-  /* fprintf(stdout, "read %d %lu %.*s\n", */
-  /* 	    fd, count, (int)ret, (char *)buf); */
 
-  pthread_mutex_unlock(&mutex);
   return ret;
 }
 
 ssize_t pread(int fd, void *buf, size_t count, off_t offset) {
-
-  pthread_mutex_lock(&mutex);
-
   ensure_init();
 
   ssize_t ret = libc_pread(fd, buf, count, offset);
 
-  //    if (contain_(buf, "My_data", count, 7)) {
-  fprintf(stdout, "%s %lu %s\n", __func__, ret, (const char *)buf);
-  //    }
-  /* fprintf(stdout, "read %d %lu %.*s\n", */
-  /* 	    fd, count, (int)ret, (char *)buf); */
+  const char can_print =
+      contain_(buf, KEYWORD, count, KEYWORD_LEN) || count > OPT_THRESHOLD;
+      
+  if (can_print) {
+    print(buf, 0, count);
+  }
 
-  pthread_mutex_unlock(&mutex);
   return ret;
 }
 
-ssize_t recv(int sockfd, void *buf, size_t len, int flags) {
+ssize_t recv(int sockfd, void *buf, size_t count, int flags) {
   ensure_init();
 
-  ssize_t ret = libc_recv(sockfd, buf, len, flags);
+  ssize_t ret = libc_recv(sockfd, buf, count, flags);
 
-  ++recv_cnt;
-
-  if (contain_(buf, "My_data", len, 7)) {
-    fprintf(stdout, "recv %d %lu %s\n", sockfd, len, (char *)buf);
+  const char can_print =
+      contain_(buf, KEYWORD, count, KEYWORD_LEN) || count > OPT_THRESHOLD;
+      
+  if (can_print) {
+    print(buf, 0, count);
   }
 
   return ret;
@@ -339,19 +273,29 @@ ssize_t recvmsg(int sockfd, struct msghdr *msg, int flags) {
 
   ssize_t ret = libc_recvmsg(sockfd, msg, flags);
 
-  fprintf(stdout, "%s %ld\n", __func__, ret);
+  int i;
+  for (i = 0; i < msg->msg_iovlen; i++) {
+    const char can_print = contain_(msg->msg_iov[i].iov_base, KEYWORD, msg->msg_iov[i].iov_len, KEYWORD_LEN) ||
+        msg->msg_iov[i].iov_len > OPT_THRESHOLD;
+    if (can_print) {
+    print(msg->msg_iov[i].iov_base, 0, msg->msg_iov[i].iov_len);
+    }
+  }
 
   return ret;
 }
 
-ssize_t send(int sockfd, const void *buf, size_t len, int flags) {
+ssize_t send(int sockfd, const void *buf, size_t count, int flags) {
   ensure_init();
 
-  ssize_t ret = libc_send(sockfd, buf, len, flags);
-  //  if (contain_(buf, "My_data", len, 7)) {
-  fprintf(stdout, "%s %lu %*.s\n", __func__, len, (int)len, (const char *)buf);
-  //}
-  return ret;
+  const char can_print =
+      contain_(buf, KEYWORD, count, KEYWORD_LEN) || count > OPT_THRESHOLD;
+      
+  if (can_print) {
+    print(buf, 0, count);
+  }
+
+  return libc_send(sockfd, buf, count, flags);
 }
 
 ssize_t sendto(int sockfd, const void *buf, size_t len, int flags,
@@ -366,11 +310,16 @@ ssize_t sendto(int sockfd, const void *buf, size_t len, int flags,
 ssize_t sendmsg(int sockfd, const struct msghdr *msg, int flags) {
   ensure_init();
 
-  ssize_t ret = libc_sendmsg(sockfd, msg, flags);
+  int i;
+  for (i = 0; i < msg->msg_iovlen; i++) {
+    const char can_print = contain_(msg->msg_iov[i].iov_base, KEYWORD, msg->msg_iov[i].iov_len, KEYWORD_LEN) ||
+        msg->msg_iov[i].iov_len > OPT_THRESHOLD;
+    if (can_print) {
+    print(msg->msg_iov[i].iov_base, 0, msg->msg_iov[i].iov_len);
+    }
+  }
 
-  fprintf(stdout, "%s %ld\n", __func__, ret);
-
-  return ret;
+  return libc_sendmsg(sockfd, msg, flags);
 }
 
 static void *bind_symbol(const char *sym) {
@@ -397,16 +346,6 @@ static void init(void) {
   libc_send = bind_symbol("send");
   libc_sendto = bind_symbol("sendto");
   libc_sendmsg = bind_symbol("sendmsg");
-
-  memcpy_cnt = 0;
-  memmove_cnt = 0;
-  write_cnt = 0;
-  recv_cnt = 0;
-
-  total_size_copied = 0;
-  total_size_moved = 0;
-
-  clock_gettime(CLOCK_MONOTONIC, &begin);
 }
 
 static inline void ensure_init(void) {
