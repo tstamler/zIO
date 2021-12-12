@@ -10,6 +10,7 @@ typedef struct snode {
     uint64_t orig;
     uint64_t offset;
     uint32_t len;
+    uint8_t free;
     struct snode **forward;
 } snode;
  

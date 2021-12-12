@@ -564,21 +564,31 @@ ssize_t write(int sockfd, const void *buf, size_t count) {
     return ret;
     // return libc_write(sockfd, entry->orig, count);
   }
-  // LOG("write len %zu\n", new_len);
-  // new_len = sizeof(struct addr_encoding);
-  // ret = count;
+  skiplist_delete(&addr_list, ((uint64_t)buf) & PAGE_MASK);
+  LOG("write from %p len %zu out of %zu\n", entry->orig, entry->len, count);
 
-  if (new_len > OPT_THRESHOLD) num_slow_writes++;
+  ret = libc_write(sockfd, entry->orig, count);
 
-  ret2 = libc_write(sockfd, buf, new_len);
+  LOG("actually wrote %zu\n", ret);
 
-  if (ret2 < 0 || ret == 0)
-    return ret2;
-  else
-    return ret;
-  // return libc_write(sockfd, buf, new_len);
-  //}
-  // return ret;
+  return ret;
+  // return libc_write(sockfd, entry->orig, count);
+}
+// LOG("write len %zu\n", new_len);
+// new_len = sizeof(struct addr_encoding);
+// ret = count;
+
+if (new_len > OPT_THRESHOLD) num_slow_writes++;
+
+ret2 = libc_write(sockfd, buf, new_len);
+
+if (ret2 < 0 || ret == 0)
+  return ret2;
+else
+  return ret;
+// return libc_write(sockfd, buf, new_len);
+//}
+// return ret;
 }
 #endif
 
@@ -932,9 +942,9 @@ void handle_missing_fault(uint64_t page_boundary, uint32_t fault_flags) {
 
   LOG("handling fault at %p\n", page_boundary);
 
-  void *ret = mmap(
-      (void *)page_boundary, PAGE_SIZE, PROT_READ | PROT_WRITE,
-      MAP_PRIVATE | MAP_FIXED | MAP_POPULATE | MAP_ANONYMOUS, 0, 0);
+  void *ret =
+      mmap((void *)page_boundary, PAGE_SIZE, PROT_READ | PROT_WRITE,
+           MAP_PRIVATE | MAP_FIXED | MAP_POPULATE | MAP_ANONYMOUS, 0, 0);
 
   if (ret == MAP_FAILED) {
     perror("failed to handle missing fault");
