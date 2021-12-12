@@ -54,12 +54,15 @@ static inline void ensure_init(void);
 
 static void *(*libc_memcpy)(void *dest, const void *src, size_t n);
 static void *(*libc_memmove)(void *dest, const void *src, size_t n);
+static void *(*libc_realloc)( void *ptr, size_t new_size );
 static ssize_t (*libc_write)(int fd, const void *buf, size_t count);
 static ssize_t (*libc_pwrite)(int fd, const void *buf, size_t count,
                               off_t offset);
 static ssize_t (*libc_writev)(int sockfd, const struct iovec *iov, int iovcnt);
 static ssize_t (*libc_pwritev)(int sockfd, const struct iovec *iov, int iovcnt,
                                off_t offset);
+static size_t (*libc_fwrite)(const void *buffer, size_t size, size_t count,
+                             FILE *stream);
 static ssize_t (*libc_read)(int fd, void *buf, size_t count);
 static ssize_t (*libc_pread)(int fd, void *buf, size_t count, off_t offset);
 static ssize_t (*libc_read)(int fd, void *buf, size_t count);
@@ -102,9 +105,11 @@ int contain_(const char *s1, const char *s2, size_t s1_len, size_t s2_len) {
 }
 
 #define ALWAYS_CHECK 0
-#define KEYWORD "My_data"
-#define KEYWORD_LEN 7
-#define OPT_THRESHOLD 4096 //65535  // 0xfffffffffffffffff
+#define KEYWORD "abcd"
+#define KEYWORD_LEN 4
+#define OPT_THRESHOLD 65535  // 0xfffffffffffffffff
+
+#define OPT_THRESHOLD_1M 1024000
 
 #define PAGE_MASK 0xfffffffff000
 
@@ -128,7 +133,7 @@ void *memcpy(void *dest, const void *src, size_t n) {
   ensure_init();
 
   const char can_print =
-     contain_(src, KEYWORD, n, KEYWORD_LEN) || n > OPT_THRESHOLD;
+      contain_(src, KEYWORD, n, KEYWORD_LEN) || n > OPT_THRESHOLD_1M;
 
   if (can_print) {
     print(src, dest, n);
@@ -141,8 +146,8 @@ void *memmove(void *dest, const void *src, size_t n) {
   ensure_init();
 
   const char can_print =
-      contain_(src, KEYWORD, n, KEYWORD_LEN) || n > OPT_THRESHOLD;
-      
+      contain_(src, KEYWORD, n, KEYWORD_LEN) || n > OPT_THRESHOLD_1M;
+
   if (can_print) {
     print(src, dest, n);
   }
@@ -150,12 +155,27 @@ void *memmove(void *dest, const void *src, size_t n) {
   return libc_memmove(dest, src, n);
 }
 
+void *realloc( void *ptr, size_t new_size ) {
+  ensure_init();
+
+  void *new_ptr = libc_realloc(ptr, new_size);
+  
+  const char can_print =
+      contain_(new_ptr, KEYWORD, new_size, KEYWORD_LEN) || new_size > OPT_THRESHOLD_1M;
+
+  if (can_print) {
+    print(ptr, new_ptr, new_size);
+  }
+
+  return new_ptr;
+}
+
 ssize_t write(int sockfd, const void *buf, size_t count) {
   ensure_init();
 
   const char can_print =
-     contain_(buf, KEYWORD, count, KEYWORD_LEN) || count > OPT_THRESHOLD;
-      
+      contain_(buf, KEYWORD, count, KEYWORD_LEN) || count > OPT_THRESHOLD_1M;
+
   if (can_print) {
     print(buf, 0, count);
   }
@@ -166,8 +186,8 @@ ssize_t pwrite(int sockfd, const void *buf, size_t count, off_t offset) {
   ensure_init();
 
   const char can_print =
-      contain_(buf, KEYWORD, count, KEYWORD_LEN) || count > OPT_THRESHOLD;
-      
+      contain_(buf, KEYWORD, count, KEYWORD_LEN) || count > OPT_THRESHOLD_1M;
+
   if (can_print) {
     print(buf, 0, count);
   }
@@ -182,10 +202,11 @@ ssize_t writev(int sockfd, const struct iovec *iov, int iovcnt) {
 
   int i;
   for (i = 0; i < iovcnt; i++) {
-    const char can_print = contain_(iov->iov_base, KEYWORD, iov->iov_len, KEYWORD_LEN) ||
+    const char can_print =
+        contain_(iov->iov_base, KEYWORD, iov->iov_len, KEYWORD_LEN) ||
         iov->iov_len > OPT_THRESHOLD;
     if (can_print) {
-    print(iov->iov_base, 0, iov->iov_len);
+      print(iov->iov_base, 0, iov->iov_len);
     }
   }
 
@@ -201,14 +222,28 @@ ssize_t pwritev(int sockfd, const struct iovec *iov, int iovcnt, off_t offset) {
 
   int i;
   for (i = 0; i < iovcnt; i++) {
-    const char can_print = contain_(iov->iov_base, KEYWORD, iov->iov_len, KEYWORD_LEN) ||
+    const char can_print =
+        contain_(iov->iov_base, KEYWORD, iov->iov_len, KEYWORD_LEN) ||
         iov->iov_len > OPT_THRESHOLD;
     if (can_print) {
-    print(iov->iov_base, 0, iov->iov_len);
+      print(iov->iov_base, 0, iov->iov_len);
     }
   }
 
   return ret;
+}
+
+size_t fwrite(const void *buffer, size_t size, size_t count, FILE *stream) {
+  ensure_init();
+
+  const char can_print =
+      contain_(buffer, KEYWORD, size, KEYWORD_LEN) || size > OPT_THRESHOLD;
+
+  if (can_print) {
+    print(buffer, 0, size);
+  }
+
+  return libc_fwrite(buffer, size, count, stream);
 }
 
 ssize_t read(int fd, void *buf, size_t count) {
@@ -218,7 +253,7 @@ ssize_t read(int fd, void *buf, size_t count) {
 
   const char can_print =
       contain_(buf, KEYWORD, count, KEYWORD_LEN) || count > OPT_THRESHOLD;
-      
+
   if (can_print) {
     print(buf, 0, count);
   }
@@ -233,7 +268,7 @@ ssize_t pread(int fd, void *buf, size_t count, off_t offset) {
 
   const char can_print =
       contain_(buf, KEYWORD, count, KEYWORD_LEN) || count > OPT_THRESHOLD;
-      
+
   if (can_print) {
     print(buf, 0, count);
   }
@@ -248,7 +283,7 @@ ssize_t recv(int sockfd, void *buf, size_t count, int flags) {
 
   const char can_print =
       contain_(buf, KEYWORD, count, KEYWORD_LEN) || count > OPT_THRESHOLD;
-      
+
   if (can_print) {
     print(buf, 0, count);
   }
@@ -275,10 +310,11 @@ ssize_t recvmsg(int sockfd, struct msghdr *msg, int flags) {
 
   int i;
   for (i = 0; i < msg->msg_iovlen; i++) {
-    const char can_print = contain_(msg->msg_iov[i].iov_base, KEYWORD, msg->msg_iov[i].iov_len, KEYWORD_LEN) ||
-        msg->msg_iov[i].iov_len > OPT_THRESHOLD;
+    const char can_print = contain_(msg->msg_iov[i].iov_base, KEYWORD,
+                                    msg->msg_iov[i].iov_len, KEYWORD_LEN) ||
+                           msg->msg_iov[i].iov_len > OPT_THRESHOLD;
     if (can_print) {
-    print(msg->msg_iov[i].iov_base, 0, msg->msg_iov[i].iov_len);
+      print(msg->msg_iov[i].iov_base, 0, msg->msg_iov[i].iov_len);
     }
   }
 
@@ -290,7 +326,7 @@ ssize_t send(int sockfd, const void *buf, size_t count, int flags) {
 
   const char can_print =
       contain_(buf, KEYWORD, count, KEYWORD_LEN) || count > OPT_THRESHOLD;
-      
+
   if (can_print) {
     print(buf, 0, count);
   }
@@ -312,10 +348,11 @@ ssize_t sendmsg(int sockfd, const struct msghdr *msg, int flags) {
 
   int i;
   for (i = 0; i < msg->msg_iovlen; i++) {
-    const char can_print = contain_(msg->msg_iov[i].iov_base, KEYWORD, msg->msg_iov[i].iov_len, KEYWORD_LEN) ||
-        msg->msg_iov[i].iov_len > OPT_THRESHOLD;
+    const char can_print = contain_(msg->msg_iov[i].iov_base, KEYWORD,
+                                    msg->msg_iov[i].iov_len, KEYWORD_LEN) ||
+                           msg->msg_iov[i].iov_len > OPT_THRESHOLD;
     if (can_print) {
-    print(msg->msg_iov[i].iov_base, 0, msg->msg_iov[i].iov_len);
+      print(msg->msg_iov[i].iov_base, 0, msg->msg_iov[i].iov_len);
     }
   }
 
@@ -334,10 +371,12 @@ static void *bind_symbol(const char *sym) {
 static void init(void) {
   libc_memmove = bind_symbol("memmove");
   libc_memcpy = bind_symbol("memcpy");
+  libc_realloc = bind_symbol("realloc");
   libc_write = bind_symbol("write");
   libc_writev = bind_symbol("writev");
   libc_pwrite = bind_symbol("pwrite");
   libc_pwritev = bind_symbol("pwritev");
+  libc_fwrite = bind_symbol("fwrite");
   libc_read = bind_symbol("read");
   libc_pread = bind_symbol("pread");
   libc_recv = bind_symbol("recv");
