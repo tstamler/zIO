@@ -57,7 +57,7 @@
 
 #define UFFD_PROTO
 
-#define LOGON 1
+#define LOGON 0
 #if LOGON
 #define LOG(...) fprintf(stderr, __VA_ARGS__)
 #else
@@ -821,7 +821,7 @@ void free(void *ptr) {
       entry->free = 1;
       return;
     } else {
-      skiptlist_delete(&addr_list, ptr_bounded);
+      skiplist_delete(&addr_list, ptr_bounded);
     }
   }
   return libc_free(ptr);
