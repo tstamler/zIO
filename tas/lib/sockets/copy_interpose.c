@@ -812,7 +812,6 @@ void *memcpy(void *dest, const void *src, size_t n) {
 }
 
 void free(void *ptr) {
-#if USED
   uint64_t ptr_bounded = (uint64_t)ptr & PAGE_MASK;
   snode *entry = skiplist_search(&addr_list, ptr_bounded);
 
@@ -826,7 +825,6 @@ void free(void *ptr) {
     }
   }
   return libc_free(ptr);
-#endif
 }
 
 void *realloc(void *ptr, size_t new_size) {
@@ -869,11 +867,11 @@ void *realloc(void *ptr, size_t new_size) {
 
   uint64_t register_len = (new_size - PAGE_SIZE) & PAGE_MASK;
 
-  ret = munmap(new_ptr_bounded + PAGE_SIZE, register_len);
-  if (ret == -1) {
-    perror("failed to unmap");
-    abort();
-  }
+  // ret = munmap(new_ptr_bounded + PAGE_SIZE, register_len);
+  // if (ret == -1) {
+  //   perror("failed to unmap");
+  //   abort();
+  // }
 
   LOG("mmaping for uffd at %p, length %zu\n", new_ptr_bounded + PAGE_SIZE,
       register_len);
