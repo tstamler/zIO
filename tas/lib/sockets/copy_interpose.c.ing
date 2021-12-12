@@ -228,7 +228,8 @@ void print_trace(void) {
 //         roll_addr[sockfd].last_addr = (uint64_t)buf + ret;
 //         roll_addr[sockfd].size = ret;
 //         roll_addr[sockfd].original = (uint64_t)buf;
-//         LOG("not rolling, size is %zu, should be %zu\n", roll_addr[sockfd].size,
+//         LOG("not rolling, size is %zu, should be %zu\n",
+//         roll_addr[sockfd].size,
 //             ret);
 //       }
 //       LOG("small addr not found: prev %p, current %p\n",
@@ -277,6 +278,20 @@ ssize_t recvmsg(int sockfd, struct msghdr *msg, int flags) {
       if (entry == NULL) {
         skiplist_insert(&addr_list, target_aligned_addr, target_addr,
                         core_buffer_addr, core_buffer_len, left_fringe_len);
+
+        struct uffdio_register uffdio_register;
+        uffdio_register.range.start = core_buffer_addr;
+        uffdio_register.range.len = core_buffer_len;
+        uffdio_register.mode = UFFDIO_REGISTER_MODE_MISSING;
+        uffdio_register.ioctls = 0;
+
+        LOG("[%s] uffd registering addr %p-%p, len %zu\n", __func__,
+            core_buffer_addr, core_buffer_addr + core_buffer_len,
+            core_buffer_len);
+        if (ioctl(uffd, UFFDIO_REGISTER, &uffdio_register) == -1) {
+          perror("ioctl uffdio_register");
+          abort();
+        }
 
         LOG("[%s] insert %p(%p) len: %lu into skiplist\n", __func__,
             target_aligned_addr, target_addr, target_len);
@@ -399,7 +414,6 @@ ssize_t pwrite(int sockfd, const void *buf, size_t count, off_t offset) {
   return ret;
 }
 
-
 void *memcpy(void *dest, const void *src, size_t n) {
   ensure_init();
 
@@ -448,7 +462,8 @@ void *memcpy(void *dest, const void *src, size_t n) {
     dest_entry.core += PAGE_SIZE;
   }
 
-  LOG("[%s] Left fringe copy to %p-%p\n", __func__, dest_entry.core - src_entry->offset, dest_entry.core);
+  LOG("[%s] Left fringe copy to %p-%p\n", __func__,
+      dest_entry.core - src_entry->offset, dest_entry.core);
   libc_memcpy(dest_entry.core - src_entry->offset, src_entry->orig,
               src_entry->offset);
 
@@ -511,10 +526,12 @@ void free(void *ptr) {
   return libc_free(ptr);
 }
 
+// TODO: old version of realloc
 // void *realloc(void *ptr, size_t new_size) {
 //   ensure_init();
 
-//   // it should just be malloc, and then unmapping then registering the malloced
+//   // it should just be malloc, and then unmapping then registering the
+//   malloced
 //   // pointer with userfaultfd
 
 //   int cannot_optimize = (new_size <= OPT_THRESHOLD || ptr == NULL);
@@ -555,7 +572,8 @@ void free(void *ptr) {
 //       register_len);
 //   uint64_t mapped_addr = (uint64_t)mmap(
 //       ((void *)(new_ptr_bounded + PAGE_SIZE)), register_len,
-//       PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_FIXED | MAP_ANONYMOUS, -1, 0);
+//       PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_FIXED | MAP_ANONYMOUS, -1,
+//       0);
 //   if (mapped_addr != (new_ptr_bounded + PAGE_SIZE)) {
 //     fprintf(stderr, "bad mmap return %p... parameters %p, %zu\n", ret,
 //             new_ptr_bounded + PAGE_SIZE, register_len);
@@ -576,8 +594,9 @@ void free(void *ptr) {
 //     abort();
 //   }
 
-//   LOG("successfully mapped and registered %p\n", new_ptr_bounded + PAGE_SIZE);
-//   LOG("inserting original %p at location %p\n", original, new_ptr_bounded);
+//   LOG("successfully mapped and registered %p\n", new_ptr_bounded +
+//   PAGE_SIZE); LOG("inserting original %p at location %p\n", original,
+//   new_ptr_bounded);
 
 //   skiplist_insert(&addr_list, new_ptr_bounded, original, new_size, offset);
 
@@ -585,7 +604,6 @@ void free(void *ptr) {
 
 //   return new_ptr;
 // }
-
 
 #if USED
 void *memmove(void *dest, const void *src, size_t n) {
@@ -713,82 +731,89 @@ void *handle_fault() {
 
         page_boundary = fault_addr & ~(PAGE_SIZE - 1);
 
-        LOG("handling fault at %p\n", fault_addr);
+        LOG("[%s] handling fault at %p\n", __func__, fault_addr);
 
-        snode *fault_page_entry =
+        snode *fault_buffer_entry =
             skiplist_search_buffer_fallin(&addr_list, page_boundary);
-        if (fault_page_entry) {
-          LOG("page_boundary: %p, fault_page_entry->lookup: %p, "
-              "fault_page_entry->orig: %p, fault_page_entry->end: %p, "
-              "fault_page_entry->len: %lu\n",
-              page_boundary, fault_page_entry->lookup, fault_page_entry->orig,
-              fault_page_entry->lookup + fault_page_entry->len,
-              fault_page_entry->len);
+        if (fault_buffer_entry) {
+          const int is_original_buffer =
+              fault_buffer_entry->orig &
+              PAGE_MASK == fault_buffer_entry->lookup;
+          if (is_original_buffer) {
+          } else {
+            uint64_t core_buffer_end =
+                fault_buffer_entry->core + fault_buffer_entry->len;
 
-          page_boundary = mmap(
-              (void *)page_boundary, PAGE_SIZE, PROT_READ | PROT_WRITE,
-              MAP_PRIVATE | MAP_FIXED | MAP_POPULATE | MAP_ANONYMOUS, 0, 0);
+            LOG("[%s] page_boundary: %p, fault_buffer_entry->lookup: %p, "
+                "fault_buffer_entry->orig: %p, fault_buffer_entry->core: %p, "
+                "core end: %p, "
+                "fault_buffer_entry->len: %lu\n",
+                __func__, page_boundary, fault_buffer_entry->lookup,
+                fault_buffer_entry->orig, fault_buffer_entry->core,
+                core_buffer_end, fault_buffer_entry->len);
 
-          if ((void *)page_boundary == MAP_FAILED) {
-            perror("failed to handle missing fault");
-            abort();
+            size_t page_index =
+                (page_boundary - fault_buffer_entry->core) / PAGE_SIZE;
+
+            LOG("page index: %zu\n", page_index);
+
+            uint64_t new_len =
+                fault_buffer_entry->len - (page_index * PAGE_SIZE);
+
+            LOG("new_len: %lu is a factor of page? %d\n", new_len,
+                new_len % PAGE_SIZE == 0);
+
+            page_boundary = mmap(
+                (void *)page_boundary, new_len, PROT_READ | PROT_WRITE,
+                MAP_PRIVATE | MAP_FIXED | MAP_POPULATE | MAP_ANONYMOUS, 0, 0);
+
+            if ((void *)page_boundary == MAP_FAILED) {
+              perror("failed to handle missing fault");
+              abort();
+            }
+
+            libc_memcpy((void *)page_boundary,
+                        (void *)fault_buffer_entry->orig +
+                            fault_buffer_entry->offset + page_index * PAGE_SIZE,
+                        new_len);
+            LOG("[%s] copy touched page %p -> %p len: %lu\n", __func__,
+                (void *)fault_buffer_entry->orig + fault_buffer_entry->offset +
+                    page_index * PAGE_SIZE,
+                page_boundary, new_len);
+
+            struct uffdio_range uffdio_unregister;
+            uffdio_unregister.start = page_boundary;
+            uffdio_unregister.len = new_len;
+
+            const int unregister_failed =
+                (ioctl(uffd, UFFDIO_UNREGISTER, &uffdio_unregister) == -1);
+
+            if (unregister_failed) {
+              perror("ioctl uffdio_unregister");
+              abort();
+            }
+
+            if (new_len > OPT_THRESHOLD) {
+              LOG("[%s] Add the fault page to skiplist\n", __func__);
+
+              skiplist_insert(&addr_list, page_boundary, page_boundary,
+                              page_boundary, new_len, 0);
+            }
+
+            const char can_delete_fault_buffer_entry = (page_index == 0);
+            if (can_delete_fault_buffer_entry) {
+              LOG("[%s] delete the entry %p\n", __func__,
+                  fault_buffer_entry->lookup);
+
+              skiplist_delete(&addr_list, fault_buffer_entry->lookup);
+            } else {
+              LOG("[%s] update the entry %p: len %lu -> %lu\n", __func__,
+                  fault_buffer_entry->lookup, fault_buffer_entry->len,
+                  fault_buffer_entry->len - new_len);
+
+              fault_buffer_entry->len -= new_len;
+            }
           }
-
-          size_t page_index =
-              (page_boundary - fault_page_entry->core) / PAGE_SIZE;
-
-          libc_memcpy((void *)page_boundary,
-                      (void *)fault_page_entry->orig +
-                          fault_page_entry->offset + page_index * PAGE_SIZE,
-                      PAGE_SIZE);
-          LOG("copy touched page %p -> %p len: %lu\n",
-              (void *)fault_page_entry->orig + fault_page_entry->offset +
-                  page_index * PAGE_SIZE,
-              page_boundary, PAGE_SIZE);
-
-          struct uffdio_range uffdio_unregister;
-          uffdio_unregister.start = page_boundary;
-          uffdio_unregister.len = PAGE_SIZE;
-
-          const int unregister_failed =
-              (ioctl(uffd, UFFDIO_UNREGISTER, &uffdio_unregister) == -1);
-
-          if (unregister_failed) {
-            perror("ioctl uffdio_unregister");
-            abort();
-          }
-
-          // const char can_delete_original_from_skiplist =
-          //     (page_index == 0);
-          // if (can_delete_original_from_skiplist) {
-          //   LOG("delete %p(%p) from skiplist\n",
-          //       (uint64_t)fault_page_entry->orig & PAGE_MASK,
-          //       fault_page_entry->orig);
-          //   skiplist_delete(&addr_list,
-          //                   (uint64_t)fault_page_entry->orig & PAGE_MASK);
-          // } else {
-          //   snode *original_buffer_entry = skiplist_search(
-          //       &addr_list, fault_page_entry->orig & PAGE_MASK);
-          //   if (!original_buffer_entry) {
-          //     fprintf(stderr, "[%s:%d] invalid codepath\n", __func__,
-          //     __LINE__); abort();
-          //   }
-
-          //   uint64_t new_len = (page_index + 1) * PAGE_SIZE;
-          //   LOG("update original_buffer_entry %p: len %lu -> %lu\n",
-          //       original_buffer_entry->lookup, original_buffer_entry->len,
-          //       new_len);
-          //   original_buffer_entry->len = new_len;
-          // }
-
-          // uint64_t new_len = fault_page_entry->len - (page_index + 1) *
-          // PAGE_SIZE; if (new_len > OPT_THRESHOLD) { LOG("insert new page %p:
-          // len %lu off %lu\n", page_boundary, new_len,
-          //     0);
-          // skiplist_insert(&addr_list, page_boundary, page_boundary,
-          // page_boundary, new_len,
-          //                 0);
-          // }
         } else {
           fprintf(stderr, "[%s:%d] invalid codepath\n", __func__, __LINE__);
           abort();
