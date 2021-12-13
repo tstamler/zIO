@@ -742,7 +742,7 @@ void *realloc(void *ptr, size_t new_size) {
 
   // FIXME: realloc may not need to copy data and be handled as a new buffer
 
-  // libc_memcpy(new_ptr, entry->orig, entry->len);
+  libc_memcpy(new_ptr, entry->orig, entry->len);
 
   uint64_t new_ptr_bounded = (uint64_t)PAGE_ALIGN_DOWN(new_ptr);
   uint64_t offset = LEFT_FRINGE_LEN(new_ptr);
@@ -753,7 +753,7 @@ void *realloc(void *ptr, size_t new_size) {
   new_entry.orig = (uint64_t)new_ptr;  // entry->orig;
 
   new_entry.addr = (uint64_t)new_ptr;
-  new_entry.len = entry->len;
+  new_entry.len = new_size;
   new_entry.offset = offset;
 
   // LOG("[%s] mmaping for uffd at %p, length %zu\n", __func__, new_entry.addr,
@@ -1018,11 +1018,11 @@ void handle_missing_fault(void *fault_addr) {
   // if (second_part_entry.len > 0) {
   if (second_part_entry.len < PAGE_SIZE) {
     if (second_part_entry.len >= PAGE_SIZE) {
-      mmap(second_part_entry.addr, second_part_entry.len,
-           PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_FIXED | MAP_ANONYMOUS, -1,
-           0);
-      libc_memcpy(second_part_entry.addr, second_part_entry.orig,
-                  second_part_entry.len);
+      // mmap(second_part_entry.addr, second_part_entry.len,
+      //      PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_FIXED | MAP_ANONYMOUS, -1,
+      //      0);
+      // libc_memcpy(second_part_entry.addr, second_part_entry.orig,
+      //             second_part_entry.len);
     }
   } else {
     LOG("[%s] Add new second part to skiplist\n", __func__);
