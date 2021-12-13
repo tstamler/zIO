@@ -12,7 +12,7 @@ LIB_ZIO_SOBJS := $(LIB_ZIO_OBJS:.o=.shared.o)
 
 
 allobjs := $(LIB_SOCKETS_OBJS) $(LIB_SOCKETS_SOBJS) $(LIB_SINT_OBJS) \
-  $(LIB_SINT_SOBJS) $(LIB_SINT_OBJS) $(LIB_ZIO_SOBJS)
+  $(LIB_SINT_SOBJS) $(LIB_ZIO_OBJS) $(LIB_ZIO_SOBJS)
 
 LIB_SOCKETS_CPPFLAGS := -I$(d)/include/ -Ilib/tas/include
 

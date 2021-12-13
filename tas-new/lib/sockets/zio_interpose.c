@@ -155,8 +155,10 @@ int socket(int domain, int type, int protocol)
 
   LOG("library socket\n");
   /* if not a TCP socket, pass call to libc */
-  if (domain != AF_INET || type != SOCK_STREAM) {
+  if (domain != AF_INET || 
+	(type & ~(SOCK_NONBLOCK | SOCK_CLOEXEC)) != SOCK_STREAM) {
     LOG("libc socket\n");
+    if(domain == AF_APPLETALK) return libc_socket(PF_INET, type, protocol);
     return libc_socket(domain, type, protocol);
   }
   LOG("tas socket\n");
@@ -332,6 +334,7 @@ ssize_t read(int sockfd, void *buf, size_t count)
     
     return count;
   } else {
+    LOG("small read...\n");
     if ((ret = tas_read(sockfd, buf, count)) == -1 && errno == EBADF) {
       return libc_read(sockfd, buf, count);
     }
@@ -611,6 +614,12 @@ int epoll_pwait(int epfd, struct epoll_event *events, int maxevents,
     int timeout, const sigset_t *sigmask)
 {
   return tas_epoll_pwait(epfd, events, maxevents, timeout, sigmask);
+}
+
+int poll(struct pollfd *fds, nfds_t nfds, int timeout)
+{
+	ensure_init();
+	return tas_poll(fds, nfds, timeout);
 }
 
 void* memcpy (void* dest, const void* src, size_t n){
@@ -894,7 +903,7 @@ void *handle_fault()
 	  pollfd.fd = uffd;
 	  pollfd.events = POLLIN;
 
-	  pollres = poll(&pollfd, 1, -1);
+	  pollres = tas_libc_poll(&pollfd, 1, -1);
 
 	  LOG("waking for page fault?\n");
 
