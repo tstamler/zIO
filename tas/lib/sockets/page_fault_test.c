@@ -309,13 +309,15 @@ ssize_t read(int sockfd, void *buf, size_t count)
   //  return libc_read(sockfd, buf, count);
   //}
   	//ret = libc_read(sockfd, buf, count);
-  if( count > OPT_THRESHOLD) {	
+  if( count > OPT_THRESHOLD){ 
+  	LOG("recv all\n");	  
         ret = libc_recv(sockfd, buf, count, MSG_WAITALL);
  	if (ret == -1){
 	       perror("linux read");
 		return ret;
 	}
   } else {
+	LOG("read short\n");  
 	ret = libc_read(sockfd, buf, count);
  	if (ret == -1){
 	       perror("linux read");
@@ -328,7 +330,7 @@ ssize_t read(int sockfd, void *buf, size_t count)
 	 
 	 //if((uint64_t) original > (uint64_t) max_addr) max_addr = original;
 	uint64_t dest_bounded = ((uint64_t) buf) & PAGE_MASK;
-	uint64_t register_len = ret;
+	uint64_t register_len = ret & PAGE_MASK;
 
 
 	 //uint64_t original = tas_get_buf_addr(sockfd, buf); 
