@@ -33,7 +33,7 @@
 
 #define BUFFER_SIZE 2048
 
-#define FLEXNIC_TRACING
+//#define FLEXNIC_TRACING
 #ifdef FLEXNIC_TRACING
 #   include <tas_trace.h>
 #   define FLEXNIC_TRACE_RX
@@ -47,7 +47,7 @@
         uint16_t len_2, const void *buf_2);
 #endif
 
-#define DATAPLANE_STATS
+//#define DATAPLANE_STATS
 
 extern int exited;
 extern unsigned fp_cores_max;

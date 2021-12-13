@@ -75,6 +75,8 @@ int tas_move_conn(int sockfd);
 
 ssize_t tas_read(int fd, void *buf, size_t count);
 
+ssize_t tas_zio_read(int fd, void *buf, size_t count, uint64_t* orig);
+
 ssize_t tas_recv(int sockfd, void *buf, size_t len, int flags);
 
 ssize_t tas_recvfrom(int sockfd, void *buf, size_t len, int flags,
@@ -87,6 +89,8 @@ ssize_t tas_readv(int sockfd, const struct iovec *iov, int iovcnt);
 ssize_t tas_pread(int sockfd, void *buf, size_t count, off_t offset);
 
 ssize_t tas_write(int fd, const void *buf, size_t count);
+
+ssize_t tas_zio_write(int fd, const void *buf, size_t count);
 
 ssize_t tas_send(int sockfd, const void *buf, size_t len, int flags);
 

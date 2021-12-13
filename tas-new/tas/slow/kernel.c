@@ -137,6 +137,7 @@ int slowpath_main(void)
       notify_canblock_reset(&nbs);
     }
 
+#ifdef DATAPLANE_STATS
     if (cur_ts - last_print >= 1000000) {
       if (!config.quiet) {
         printf("stats: drops=%"PRIu64" k_rexmit=%"PRIu64" ecn=%"PRIu64" acks=%"
@@ -148,8 +149,7 @@ int slowpath_main(void)
       last_print = cur_ts;
     }
 
-#ifdef DATAPLANE_STATS
-    dataplane_dump_stats();
+    //dataplane_dump_stats();
 #endif
   }
 

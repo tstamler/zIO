@@ -278,7 +278,7 @@ void flexnic_loadmon(uint32_t ts)
   /* ewma for busy cycles and total cycles */
   ewma_busy = (7 * ewma_busy + cyc_busy) / 8;
   ewma_cycles = (7 * ewma_cycles + cycles) / 8;
-
+#ifdef DATAPLANE_STATS
   /* periodically print out staticstics */
   if (count++ % 100 == 0) {
     if (!config.quiet) {
@@ -289,7 +289,7 @@ void flexnic_loadmon(uint32_t ts)
     }
     kdrops = 0;
   }
-
+#endif
   /* waiting period after scaling decsions */
   if (waiting && ++waiting_n < 10)
     return;
