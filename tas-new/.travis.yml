@@ -1,0 +1,25 @@
+os: linux
+dist: bionic
+language: generic
+compiler:
+- gcc
+env:
+- DPDK_VER=17.11.9
+- DPDK_VER=18.11.5
+- DPDK_VER=19.11
+cache:
+  directories:
+    - $HOME/dpdk/
+    - tests/distfiles/
+install:
+- /bin/bash .travis-install.sh
+before_script:
+- mkdir /tmp/cores
+- sudo sysctl -w kernel.core_pattern="/tmp/cores/core.%e.%p.%t"
+- ulimit -c unlimited -S # enable core dumps
+script:
+- make all -j2 RTE_SDK=${HOME}/dpdk/${DPDK_VER}
+- make tests tests-full -j2 RTE_SDK=${HOME}/dpdk/${DPDK_VER}
+- make run-tests run-tests-full RTE_SDK=${HOME}/dpdk/${DPDK_VER} NODE_SYSTEM=y
+after_failure:
+- /bin/bash .travis-postmortem.sh

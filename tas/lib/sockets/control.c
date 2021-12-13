@@ -586,7 +586,8 @@ int tas_getsockopt(int sockfd, int level, int optname, void *optval,
   if(level == IPPROTO_TCP && optname == TCP_NODELAY) {
     /* check nodelay flag: always set */
     res = 1;
-
+  } else if (level == SOL_SOCKET && optname == SO_TYPE){
+     res = s->type;
   } else if(level == SOL_SOCKET &&
       (optname == SO_RCVBUF || optname == SO_SNDBUF))
   {

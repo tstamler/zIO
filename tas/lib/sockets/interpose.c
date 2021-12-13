@@ -153,6 +153,7 @@ int socket(int domain, int type, int protocol)
 
   /* if not a TCP socket, pass call to libc */
   if (domain != AF_INET || type != SOCK_STREAM) {
+    fprintf(stderr, "TAS: calling libc socket\n");
     return libc_socket(domain, type, protocol);
   }
 
@@ -204,6 +205,7 @@ int listen(int sockfd, int backlog)
   int ret;
   ensure_init();
   if ((ret = tas_listen(sockfd, backlog)) == -1 && errno == EBADF) {
+    fprintf(stderr, "TAS: calling libc listen\n");
     return libc_listen(sockfd, backlog);
   }
   return ret;

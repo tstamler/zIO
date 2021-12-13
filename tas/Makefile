@@ -43,7 +43,7 @@ COPY_INTERPOSE_OBJS = $(addprefix lib/sockets/,copy_interpose.o)
 PAGE_FAULT_OBJS = $(addprefix lib/sockets/,page_fault_test.o)
 TAS_COPY_INTERPOSE_OBJS = $(addprefix lib/sockets/,tas_copy_interpose.o)
 ZIO_INTERPOSE_OBJS = $(addprefix lib/sockets/,zio_interpose.o)
-MEM_COUNTER_OBJS = $(addprefix lib/sockets/,mem_counter.o)
+#MEM_COUNTER_OBJS = $(addprefix lib/sockets/mem_counter.o)
 CFLAGS += -I. -Ilib/tas/include -Ilib/sockets/include
 
 shared_objs = $(patsubst %.o,%.shared.o,$(1))
@@ -74,7 +74,7 @@ TESTS= \
 
 all: lib/libtas_sockets.so lib/libtas_interpose.so lib/zio_interpose.so \
 	lib/libtas.so lib/tas_copy_interpose.so lib/copy_interpose.so \
-	lib/libmem_counter.so lib/page_fault_test.so \
+	lib/page_fault_test.so \
 	tools/tracetool tools/statetool tools/scaletool \
 	tas/tas
 
