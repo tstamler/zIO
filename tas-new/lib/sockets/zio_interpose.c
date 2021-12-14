@@ -411,20 +411,20 @@ ssize_t recv(int sockfd, void *buf, size_t len, int flags)
       return libc_recv(sockfd, buf, len, flags);
     }
 
-    uint64_t dest_bounded = ((uint64_t) buf) & PAGE_MASK;
+    uint64_t dest_bounded = ((uint64_t) buf - 1) & PAGE_MASK;
     uint64_t len_bounded = ((uint64_t) len) & PAGE_MASK;
     skiplist_insert(&addr_list, dest_bounded, original, len, 0);
     
     struct uffdio_register uffdio_register;
     uffdio_register.range.start = dest_bounded + 4096;
-    uffdio_register.range.len = len_bounded-4096;
+    uffdio_register.range.len = len_bounded;
     uffdio_register.mode = UFFDIO_REGISTER_MODE_MISSING;
     uffdio_register.ioctls = 0;
 		
     LOG("read uffd registering addr %p-%p, len %zu\n", dest_bounded + 4096, dest_bounded + len, len-4096);
     if (ioctl(uffd, UFFDIO_REGISTER, &uffdio_register) == -1) {
-	perror("ioctl uffdio_register");
-	abort();
+	//perror("ioctl uffdio_register");
+	//abort();
     }
     LOG("read successfully mapped and registered %p\n", dest_bounded + 4096);
     
