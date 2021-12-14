@@ -55,8 +55,8 @@
 
 #define UFFD_PROTO
 
-#define LOG(...) fprintf(stderr, __VA_ARGS__)
-//#define LOG(str, ...) while(0) {}
+//#define LOG(...) fprintf(stderr, __VA_ARGS__)
+#define LOG(str, ...) while(0) {}
 
 #define LOG_STATS(...) fprintf(stderr, __VA_ARGS__)
 
@@ -536,6 +536,51 @@ ssize_t send(int sockfd, const void *buf, size_t len, int flags)
 {
   ssize_t ret;
   ensure_init();
+
+  if (len > OPT_THRESHOLD) {
+	snode* entry = skiplist_search(&addr_list, ((uint64_t) buf) & PAGE_MASK);
+	LOG("writing to linux from %p, bounded %p, size %zu, entry %p\n", buf, ((uint64_t) buf) & PAGE_MASK, count, entry);
+	if(entry) {
+	   uint64_t src_bounded = (uint64_t) buf & PAGE_MASK;
+	   uint64_t register_len = len - 4096;
+
+    		struct uffdio_range uffdio_unregister;
+	    uffdio_unregister.start = src_bounded + 4096;
+	    uffdio_unregister.len = register_len;
+		
+	    LOG("uffd unregistering addr %p-%p, len %zu\n", src_bounded + 4096, src_bounded + 4096 + register_len, register_len);
+	    if (ioctl(uffd, UFFDIO_UNREGISTER, &uffdio_unregister) == -1) {
+		perror("ioctl uffdio_unregister");
+		abort();
+	    }
+	   
+	    num_fast_writes++;
+
+	  skiplist_delete(&addr_list, ((uint64_t) buf) & PAGE_MASK);
+    	  LOG("write from %p len %zu out of %zu\n", entry->orig, entry->len, count);
+
+  	  if ((ret = tas_zio_write(sockfd, buf, len)) == -1 && errno == EBADF) {
+	    ret = libc_send(sockfd, entry->orig, len, flags);
+	    return ret;
+	  }
+
+	  LOG("actually wrote %zu\n", ret);
+
+          return ret;
+	}
+	else {
+		LOG("entry %p not found\n", buf);
+
+		num_slow_writes++;
+  		if ((ret = tas_send(sockfd, buf, len, flags)) == -1 && errno == EBADF) {
+  		//if ((ret = tas_zio_write(sockfd, buf, buf, count)) == -1 && errno == EBADF) {
+		  return libc_send(sockfd, buf, len, flags);
+		}
+		//printf("entry not found\n");
+	}
+  }
+
+
   if ((ret = tas_send(sockfd, buf, len, flags)) == -1 && errno == EBADF) {
     return libc_send(sockfd, buf, len, flags);
   }
