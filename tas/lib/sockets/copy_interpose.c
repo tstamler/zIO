@@ -969,7 +969,7 @@ void handle_missing_fault(void *fault_addr) {
   }
 
   const void *src_ptr = (void *)(fault_buffer_entry->orig +
-                                 (fault_addr - fault_buffer_entry->addr));
+                                 (fault_page_start_addr - fault_buffer_entry->addr));
 
   // FIXME: memcpy is freezing
   LOG("[%s] will copy touched page %p -> %p(fault_buffer_entry->orig: %p)\n",
