@@ -54,7 +54,7 @@ static inline void ensure_init(void);
 
 static void *(*libc_memcpy)(void *dest, const void *src, size_t n);
 static void *(*libc_memmove)(void *dest, const void *src, size_t n);
-static void *(*libc_realloc)( void *ptr, size_t new_size );
+static void *(*libc_realloc)(void *ptr, size_t new_size);
 static ssize_t (*libc_write)(int fd, const void *buf, size_t count);
 static ssize_t (*libc_pwrite)(int fd, const void *buf, size_t count,
                               off_t offset);
@@ -80,17 +80,20 @@ static ssize_t (*libc_sendto)(int sockfd, const void *buf, size_t len,
 static ssize_t (*libc_sendmsg)(int sockfd, const struct msghdr *msg, int flags);
 
 int eq_(const char *s1, const char *s2, size_t n) {
-  if (!s1 || !s2) return 0;
+  if (!s1 || !s2)
+    return 0;
 
   int i = 0;
   for (i = 0; i < n; i++) {
-    if (s1[i] != s2[i]) return 0;
+    if (s1[i] != s2[i])
+      return 0;
   }
   return 1;
 }
 
 int contain_(const char *s1, const char *s2, size_t s1_len, size_t s2_len) {
-  if (!s1 || !s2) return 0;
+  if (!s1 || !s2)
+    return 0;
 
   int i;
   for (i = 0; i < s1_len; i++) {
@@ -105,28 +108,28 @@ int contain_(const char *s1, const char *s2, size_t s1_len, size_t s2_len) {
 }
 
 #define ALWAYS_CHECK 0
-#define KEYWORD "abcd"
+#define KEYWORD "nono"
 #define KEYWORD_LEN 4
-#define OPT_THRESHOLD 65535  // 0xfffffffffffffffff
+#define OPT_THRESHOLD 65535 // 0xfffffffffffffffff
 
-#define OPT_THRESHOLD_1M 1024000
+#define OPT_THRESHOLD_1M 65535
 
 #define PAGE_MASK 0xfffffffff000
 
-#define print(addr1, addr2, len)                                              \
-  do {                                                                        \
-    const int is_only_addr1 = (addr1 && !addr2);                              \
-    const int is_only_addr2 = (!addr1 && addr2);                              \
-    if (is_only_addr1) {                                                      \
-      fprintf(stdout, "%s len:%zu %p(%lu)\n", __func__, len, addr1,           \
-              (uint64_t)addr1 &PAGE_MASK);                                    \
-    } else if (is_only_addr2) {                                               \
-      fprintf(stdout, "%s len:%zu %p(%lu)\n", __func__, len, addr2,           \
-              (uint64_t)addr2 &PAGE_MASK);                                    \
-    } else {                                                                  \
-      fprintf(stdout, "%s len:%zu %p(%lu)->%p(%lu)\n", __func__, len, addr1,  \
-              (uint64_t)addr1 &PAGE_MASK, addr2, (uint64_t)addr2 &PAGE_MASK); \
-    }                                                                         \
+#define print(addr1, addr2, len)                                               \
+  do {                                                                         \
+    const int is_only_addr1 = (addr1 && !addr2);                               \
+    const int is_only_addr2 = (!addr1 && addr2);                               \
+    if (is_only_addr1) {                                                       \
+      fprintf(stdout, "%s len:%zu %p(%lu)\n", __func__, len, addr1,            \
+              (uint64_t)addr1 &PAGE_MASK);                                     \
+    } else if (is_only_addr2) {                                                \
+      fprintf(stdout, "%s len:%zu %p(%lu)\n", __func__, len, addr2,            \
+              (uint64_t)addr2 &PAGE_MASK);                                     \
+    } else {                                                                   \
+      fprintf(stdout, "%s len:%zu %p(%lu)->%p(%lu)\n", __func__, len, addr1,   \
+              (uint64_t)addr1 &PAGE_MASK, addr2, (uint64_t)addr2 &PAGE_MASK);  \
+    }                                                                          \
   } while (0)
 
 void *memcpy(void *dest, const void *src, size_t n) {
@@ -155,13 +158,13 @@ void *memmove(void *dest, const void *src, size_t n) {
   return libc_memmove(dest, src, n);
 }
 
-void *realloc( void *ptr, size_t new_size ) {
+void *realloc(void *ptr, size_t new_size) {
   ensure_init();
 
   void *new_ptr = libc_realloc(ptr, new_size);
-  
-  const char can_print =
-      contain_(new_ptr, KEYWORD, new_size, KEYWORD_LEN) || new_size > OPT_THRESHOLD_1M;
+
+  const char can_print = contain_(new_ptr, KEYWORD, new_size, KEYWORD_LEN) ||
+                         new_size > OPT_THRESHOLD_1M;
 
   if (can_print) {
     print(ptr, new_ptr, new_size);
