@@ -61,7 +61,7 @@
 
 #define UFFD_PROTO
 
-#define LOGON 1
+#define LOGON 0
 #if LOGON
 #define LOG(...) fprintf(stderr, __VA_ARGS__)
 #else
@@ -309,7 +309,7 @@ void *memcpy(void *dest, const void *src, size_t n) {
       if (ioctl(uffd, UFFDIO_REGISTER, &uffdio_register) == -1) {                
         // If the kernel did not support UFFDIO_REGISTER_MODE_WP, remap with a read permission
         void *ret =
-          mmap(src_entry->addr + src_entry->offset, src_entry->len, PROT_READ,
+          mmap(src_entry->addr + src_entry->offset, src_entry->len, PROT_READ | PROT_WRITE,
               MAP_PRIVATE | MAP_FIXED | MAP_ANONYMOUS | MAP_POPULATE, -1, 0);
       }                                                                          
     }
@@ -886,9 +886,6 @@ void handle_missing_fault(void *fault_addr) {
     abort();
   }
 
-  snode_dump(fault_buffer_entry);
-
-
   void *copy_dst = fault_page_start_addr;
   void *copy_src = fault_buffer_entry->orig + ((long long)fault_page_start_addr -
                                           (long long)fault_buffer_entry->addr);
@@ -902,6 +899,8 @@ void handle_missing_fault(void *fault_addr) {
       copy_dst = fault_buffer_entry->addr + fault_buffer_entry->offset - PAGE_SIZE;
       copy_src = fault_buffer_entry->orig + fault_buffer_entry->offset - PAGE_SIZE;
       copy_len = fault_buffer_entry->len + PAGE_SIZE;
+
+      skiplist_delete(&addr_list, fault_buffer_entry->lookup);
     }
   } else if (fault_buffer_entry->addr + fault_buffer_entry->offset + fault_buffer_entry->len == fault_page_start_addr + PAGE_SIZE) {
     fault_buffer_entry->len -= PAGE_SIZE;
@@ -910,6 +909,8 @@ void handle_missing_fault(void *fault_addr) {
       copy_dst = fault_buffer_entry->addr + fault_buffer_entry->offset;
       copy_src = fault_buffer_entry->orig + fault_buffer_entry->offset;
       copy_len = fault_buffer_entry->len + PAGE_SIZE;
+
+      skiplist_delete(&addr_list, fault_buffer_entry->lookup);
     }
   } else {
     snode second_tracked_buffer;
@@ -925,10 +926,12 @@ void handle_missing_fault(void *fault_addr) {
       copy_dst = fault_buffer_entry->addr + fault_buffer_entry->offset;
       copy_src = fault_buffer_entry->orig + fault_buffer_entry->offset;
       copy_len = fault_buffer_entry->len + PAGE_SIZE;
+
+      skiplist_delete(&addr_list, fault_buffer_entry->lookup);
     }
 
     if (second_tracked_buffer.len <= OPT_THRESHOLD) {
-      copy_len = fault_buffer_entry->len;
+      copy_len += second_tracked_buffer.len;
     } else {
       skiplist_insert_entry(&addr_list, &second_tracked_buffer);
     }
