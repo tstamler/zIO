@@ -171,24 +171,6 @@ void print_trace(void) {
   libc_free(strings);
 }
 
-void _pwrite_data(const snode *node, struct write_args_t *args) {
-  // Assume that args->buf is already page aligned
-  if (args->buf + args->buf_off < node->addr + node->len + node->offset) {
-    size_t bytes_to_write = MIN(args->len, node->len);
-
-    args->iovec[args->iovcnt].iov_base = node->orig + args->buf_off;
-    args->iovec[args->iovcnt].iov_len = bytes_to_write;
-
-    args->iovcnt++;
-    args->len -= bytes_to_write;
-    args->buf_off += bytes_to_write;
-
-    if (args->len < PAGE_SIZE) {
-      args->stop = 1;
-    }
-  }
-}
-
 ssize_t pwrite(int sockfd, const void *buf, size_t count, off_t offset) {
   ensure_init();
 
@@ -201,24 +183,11 @@ ssize_t pwrite(int sockfd, const void *buf, size_t count, off_t offset) {
 
   pthread_mutex_lock(&mu);
 
-  // int i=0;
-  // for (i=0; i<count; i++) {
-  //   printf("%c", ((char *)buf)[i]);
-  // }
-  // printf("\n");
-
   const uint64_t left_fringe_len = LEFT_FRINGE_LEN(buf);
   const uint64_t right_fringe_len = RIGHT_FRINGE_LEN(count, left_fringe_len);
 
   struct iovec iovec[PWRITE_IOV_MAX_CNT];
   int iovcnt = 0;
-
-  // if (left_fringe_len > 0) {
-  //   iovec[iovcnt].iov_base = (void *)buf;
-  //   iovec[iovcnt].iov_len = left_fringe_len;
-
-  //   iovcnt++;
-  // }
 
   uint64_t off = 0;
   uint64_t remaining_len = count;
@@ -285,7 +254,6 @@ void *memcpy(void *dest, const void *src, size_t n) {
 
   LOG("[%s] copying %p-%p to %p-%p, size %zu\n", __func__, src, src + n, dest,
       dest + n, n);
-  // skiplist_dump(&addr_list);
 
   const uint64_t core_src_buffer_addr = src + LEFT_FRINGE_LEN(src);
   const uint64_t core_dst_buffer_addr = dest + LEFT_FRINGE_LEN(dest);
@@ -310,12 +278,17 @@ void *memcpy(void *dest, const void *src, size_t n) {
       uffdio_register.mode = UFFDIO_REGISTER_MODE_WP;
       uffdio_register.ioctls = 0;
       if (ioctl(uffd, UFFDIO_REGISTER, &uffdio_register) == -1) {
-        // If the kernel did not support UFFDIO_REGISTER_MODE_WP, remap with a
-        // read permission
-        void *ret =
-            mmap(src_entry->addr + src_entry->offset, src_entry->len,
-                 PROT_READ,
-                 MAP_PRIVATE | MAP_FIXED | MAP_ANONYMOUS | MAP_POPULATE, -1, 0);
+        if (errno == EINVAL) {
+          LOG("[%s] write-protection fault fault by userfaultfd may not be"
+              "supported by the current kernel\n");
+          // If the kernel did not support UFFDIO_REGISTER_MODE_WP, remap with a
+          // read permission
+          // void *ret =
+          //     mmap(src_entry->addr + src_entry->offset, src_entry->len,
+          //          PROT_READ,
+          //          MAP_PRIVATE | MAP_FIXED | MAP_ANONYMOUS | MAP_POPULATE,
+          //          -1, 0);
+        }
       }
     }
 
@@ -363,312 +336,20 @@ void *memcpy(void *dest, const void *src, size_t n) {
           dest + (n - remaining_len),
           dest + (n - remaining_len) + remaining_len, remaining_len);
     }
-    num_fast_copy++;
+    ++num_fast_copy;
+
     LOG("[%s] ########## Fast copy done\n", __func__);
     pthread_mutex_unlock(&mu);
+
     return dest;
   } else {
-    num_slow_copy++;
+    ++num_slow_copy;
 
     LOG("[%s] ########## Slow copy done\n", __func__);
     pthread_mutex_unlock(&mu);
 
     return libc_memcpy(dest, src, n);
   }
-#if 0
-  void *dest_addr = dest;
-  size_t remaining_len = n;
-
-  size_t dest_left_fringe_len = LEFT_FRINGE_LEN(dest);
-  size_t dest_right_fringe_len = RIGHT_FRINGE_LEN(n, dest_left_fringe_len);
-  if (dest_left_fringe_len > 0) {
-    libc_memcpy(dest, src, dest_left_fringe_len);
-
-    dest_addr += dest_left_fringe_len;
-    remaining_len -= dest_left_fringe_len;
-  }
-
-  LOG("[%s] copy the left fringe %p-%p->%p-%p len: %zu\n", __func__, src,
-      src + dest_left_fringe_len, dest, dest + dest_left_fringe_len,
-      dest_left_fringe_len);
-
-  while (remaining_len > 0) {
-    snode *src_entry =
-        skiplist_search_buffer_fallin(&addr_list, src + (dest_addr - dest));
-
-    if (src_entry) {
-      LOG("[%s] found src_entry\n", __func__);
-      snode_dump(src_entry);
-
-      snode dest_entry;
-      dest_entry.lookup = PAGE_ALIGN_DOWN(dest_addr);
-      dest_entry.orig = src_entry->orig;
-      dest_entry.addr = dest;
-      dest_entry.len =
-          MAX(dest_right_fringe_len,
-              MIN(remaining_len - dest_right_fringe_len, src_entry->len));
-      dest_entry.offset = dest_addr - dest;
-
-      snode *exist = skiplist_search(&addr_list, dest_entry.lookup);
-      if (exist) {
-        LOG("[%s] dest entry exists\n", __func__);
-        snode_dump(exist);
-        UNREGISTER_FAULT(exist->addr + exist->offset, exist->len);
-        skiplist_delete(&addr_list, dest_entry.lookup);
-      }
-
-      if (dest_entry.len > OPT_THRESHOLD) {
-        LOG("[%s] insert new dest entry\n", __func__);
-        snode_dump(&dest_entry);
-
-        skiplist_insert_entry(&addr_list, &dest_entry);
-        void *ret = mmap(dest_entry.addr + dest_entry.offset, dest_entry.len,
-                         PROT_READ | PROT_WRITE,
-                         MAP_PRIVATE | MAP_FIXED | MAP_ANONYMOUS, -1, 0);
-        REGISTER_FAULT(dest_entry.addr + dest_entry.offset, dest_entry.len);
-
-        LOG("[%s] tracking buffer %p-%p len:%lu\n", __func__,
-            dest_entry.addr + dest_entry.offset,
-            dest_entry.addr + dest_entry.offset + dest_entry.len,
-            dest_entry.len);
-      } else {
-        LOG("[%s] copy without tracking %p-%p->%p-%p len:%lu\n", __func__,
-            src_entry->orig + (dest_addr - dest),
-            src_entry->orig + (dest_addr - dest) + dest_entry.len, dest_addr,
-            dest_addr + dest_entry.len, dest_entry.len);
-        void *ret =
-            mmap(dest_addr, dest_entry.len, PROT_READ | PROT_WRITE,
-                 MAP_PRIVATE | MAP_FIXED | MAP_ANONYMOUS | MAP_POPULATE, -1, 0);
-        libc_memcpy(dest_addr, src_entry->orig + (dest_addr - dest),
-                    dest_entry.len);
-      }
-
-      dest_addr += dest_entry.len;
-      remaining_len -= dest_entry.len;
-    } else {
-      size_t len = MIN(remaining_len, (remaining_len - PAGE_SIZE > OPT_THRESHOLD
-                                           ? PAGE_SIZE
-                                           : remaining_len));
-      LOG("[%s] no src --> copy %p-%p->%p-%p len: %zu\n", __func__,
-          src + (dest_addr - dest), src + (dest_addr - dest) + len, dest_addr,
-          dest_addr + len, len);
-
-      void *ret =
-          mmap(dest_addr, len, PROT_READ | PROT_WRITE,
-               MAP_PRIVATE | MAP_FIXED | MAP_ANONYMOUS | MAP_POPULATE, -1, 0);
-      libc_memcpy(dest_addr, src + (dest_addr - dest), len);
-
-      dest_addr += len;
-      remaining_len -= len;
-    }
-
-    LOG("[%s] remaining_len: %zu\n", __func__, remaining_len);
-  }
-
-  num_fast_copy++;
-
-  pthread_mutex_unlock(&mu);
-
-  return dest;
-#endif
-
-#if 0
-  snode *src_entry = skiplist_search(&addr_list, (uint64_t)src_aligned_addr);
-  const char is_no_src = (src_entry == NULL);
-  snode new_entry;
-
-  if (is_no_src) {
-    LOG("[%s] %p appears first time --> store to skiplist\n", __func__, src);
-
-    uint64_t src_left_fringe_len = LEFT_FRINGE_LEN(src);
-    // if (src_left_fringe_len == 0)
-    //   src_left_fringe_len = PAGE_SIZE;
-    uint64_t src_right_fringe_len = RIGHT_FRINGE_LEN(n, src_left_fringe_len);
-    // if (src_right_fringe_len == 0)
-    //   src_right_fringe_len = PAGE_SIZE;
-
-    new_entry.lookup = (uint64_t)src_aligned_addr;
-    new_entry.orig = (uint64_t)src;
-    new_entry.addr = (uint64_t)src;
-    new_entry.len = n - (src_left_fringe_len + src_right_fringe_len);
-    new_entry.offset = src_left_fringe_len;
-
-    if (new_entry.len > 0) {
-      skiplist_insert_entry(&addr_list, &new_entry);
-
-#if LOGON
-      LOG("[%s] insert src entry\n", __func__);
-      snode_dump(&new_entry);
-#endif
-    }
-
-    src_entry = &new_entry;
-
-    // mprotect(src_entry->addr + src_entry->offset, src_entry->len, PROT_READ);
-  }
-
-  // If the source did not have a page being tracked, it is the original for
-  // dest
-  // if (src_entry->dirty_bytes == src_entry->len) {
-  //   LOG("[%s] %p becomes the original for %p\n", __func__, src, dest);
-  // UNREGISTER_FAULT(src_entry->addr + src_entry->offset, src_entry->len);
-  //   src_entry->orig = src_entry->addr;
-  //   src_entry->dirty_bytes = 0;
-  // }
-
-  if (src_entry->addr == src_entry->orig) {
-    // TODO: implment segfault handler for mprotect
-    // mprotect(src_entry->addr + src_entry->offset, src_entry->len, PROT_READ);
-
-    // TODO: A specific kernel version is required
-    // struct uffdio_register uffdio_register;
-    // uffdio_register.range.start = (uint64_t)core_buffer_addr;
-    // uffdio_register.range.len = core_buffer_len;
-    // uffdio_register.mode = UFFDIO_REGISTER_MODE_WP;
-    // uffdio_register.ioctls = 0;
-
-    // if (ioctl(uffd, UFFDIO_REGISTER, &uffdio_register) == -1) {
-    //   perror("ioctl uffdio_register");
-    //   abort();
-    // }
-
-    // struct uffdio_writeprotect wp;
-    // wp.range.start = uffdio_register.range.start;
-    // wp.range.len = uffdio_register.range.len;
-    // wp.mode = UFFDIO_WRITEPROTECT_MODE_WP;
-    // if (ioctl(uffd, UFFDIO_WRITEPROTECT, &wp) == -1) {
-    //   perror("Set write protection fail");
-    //   abort();
-    // }
-  }
-
-  // TODO: If the source buffer is shorter than the dest, right fringe should be
-  // beyond the end of the source core buffer.
-
-  LOG("[%s] src entry\n", __func__);
-#if LOGON
-  snode_dump(src_entry);
-#endif
-
-  uint64_t dest_left_fringe_len = LEFT_FRINGE_LEN(dest);
-  void *dest_addr = dest;
-  uint64_t remaining_len = n;
-
-  if (dest_left_fringe_len > 0) {
-    LOG("copy left fringe: %p-%p -> %p-%p, len: %lu\n", src,
-        src + dest_left_fringe_len, dest, dest + dest_left_fringe_len,
-        dest_left_fringe_len);
-
-    libc_memcpy((void *)dest_addr, src, dest_left_fringe_len);
-
-
-    remaining_len -= dest_left_fringe_len;
-    dest_addr += dest_left_fringe_len;
-  }
-  // if (dest_left_fringe_len == 0)
-  //   dest_left_fringe_len = PAGE_SIZE;
-  uint64_t dest_right_fringe_len = RIGHT_FRINGE_LEN(n, dest_left_fringe_len);
-  // if (dest_right_fringe_len == 0)
-  //   dest_right_fringe_len = PAGE_SIZE;
-
-  // XXX: For small IO, it is likely for left and right fringes to be the same
-
-  snode dest_entry;
-  dest_entry.lookup = (uint64_t)PAGE_ALIGN_DOWN(dest);
-  dest_entry.orig = src_entry->orig;
-  dest_entry.addr = (uint64_t)dest;
-  dest_entry.len =
-      MIN(src_entry->len, n - (dest_left_fringe_len + dest_right_fringe_len));
-  dest_entry.offset = dest_left_fringe_len;
-
-  if (dest_entry.len > 0) {
-    snode *entry;
-    if ((entry = skiplist_search(&addr_list, dest_entry.lookup))) {
-      UNREGISTER_FAULT(entry->addr+entry->offset, entry->len);
-      skiplist_delete(&addr_list, entry->lookup);
-    }
-
-    skiplist_insert_entry(&addr_list, &dest_entry);
-    LOG("[%s] insert dest entry\n", __func__);
-
-#if LOGON
-    snode_dump(&dest_entry);
-#endif
-
-    void *core_addr = mmap((void *)(dest_entry.addr + dest_entry.offset),
-                           dest_entry.len, PROT_READ | PROT_WRITE,
-                           MAP_PRIVATE | MAP_FIXED | MAP_ANONYMOUS, -1, 0);
-
-    REGISTER_FAULT(dest_entry.addr + dest_entry.offset, dest_entry.len);
-  }
-
-  dest_addr += dest_entry.len;
-  remaining_len -= dest_entry.len;
-
-  while (remaining_len > 0) {
-    if (remaining_len <= OPT_THRESHOLD) {
-      LOG("[%s] remaining size is less than threshold! copy right fringe: "
-          "%p-%p "
-          "-> %p-%p, len: %lu\n",
-          __func__, src + (dest_addr - dest),
-          src + (dest_addr - dest) + remaining_len, dest_addr,
-          dest_addr + remaining_len, remaining_len);
-
-      libc_memcpy(dest_addr, (const void *)(src + (dest_addr - dest)),
-                  remaining_len);
-
-      break;
-    }
-
-    snode *another_src_entry = skiplist_search(
-        &addr_list, (uint64_t)PAGE_ALIGN_DOWN(src + (dest_addr - dest)));
-    if (another_src_entry) {
-      dest_entry.lookup = PAGE_ALIGN_DOWN(dest_addr);
-      dest_entry.orig = another_src_entry->orig;
-      dest_entry.addr = dest_addr;
-      dest_entry.len =
-          MIN(another_src_entry->len, remaining_len - dest_right_fringe_len);
-      dest_entry.offset = LEFT_FRINGE_LEN(dest_addr);
-
-      if (dest_entry.len > 0) {
-        snode *entry;
-        if ((entry = skiplist_search(&addr_list, dest_entry.lookup))) {
-          UNREGISTER_FAULT(entry->addr + entry->offset, entry->len);
-          skiplist_delete(&addr_list, entry->lookup);
-        }
-
-        skiplist_insert_entry(&addr_list, &dest_entry);
-        LOG("[%s] insert another dest entry\n", __func__);
-
-#if LOGON
-        snode_dump(&dest_entry);
-#endif
-
-        void *core_addr = mmap((void *)(dest_entry.addr + dest_entry.offset),
-                               dest_entry.len, PROT_READ | PROT_WRITE,
-                               MAP_PRIVATE | MAP_FIXED | MAP_ANONYMOUS, -1, 0);
-
-        REGISTER_FAULT(dest_entry.addr + dest_entry.offset, dest_entry.len);
-      }
-
-      dest_addr += dest_entry.len;
-      remaining_len -= dest_entry.len;
-    } else {
-      LOG("[%s] no tracking page --> copy the page right away!\n", __func__);
-
-      memcpy(dest_addr, (const void *)(src + (dest_addr - dest)), PAGE_SIZE);
-      dest_addr += PAGE_SIZE;
-      remaining_len -= PAGE_SIZE;
-    }
-  }
-
-  num_fast_copy++;
-
-  pthread_mutex_unlock(&mu);
-
-  return dest;
-
-#endif
 }
 
 void free(void *ptr) {
@@ -686,74 +367,6 @@ void free(void *ptr) {
   // }
   return libc_free(ptr);
 }
-
-// void *realloc(void *ptr, size_t new_size) {
-//   ensure_init();
-
-//   // LOG("[%s] %p (%p)\n", __func__, ptr, ((uint64_t)ptr) & PAGE_MASK);
-
-//   int cannot_optimize = (new_size <= OPT_THRESHOLD || ptr == NULL);
-
-//   if (cannot_optimize) {
-//     // LOG("[%s] (%zu <= OPT_THRESHOLD || ptr == NULL)\n", __func__,
-//     new_size); return libc_realloc(ptr, new_size);
-//   }
-
-//   pthread_mutex_lock(&mu);
-
-//   snode *entry = skiplist_search(&addr_list, (uint64_t)PAGE_ALIGN_DOWN(ptr));
-//   cannot_optimize = (entry == NULL);
-
-//   if (cannot_optimize) {
-//     // LOG("[%s] entry %p not found\n", __func__, ((uint64_t)ptr) &
-//     PAGE_MASK); pthread_mutex_unlock(&mu); return libc_realloc(ptr,
-//     new_size);
-//   }
-
-//   LOG("[%s] ptr: %p, size: %zu\n", __func__, ptr, new_size);
-
-//   void *new_ptr;
-//   int ret = posix_memalign(&new_ptr, PAGE_SIZE, new_size);
-//   if (ret == -1) {
-//     perror("failed to posix_memalign");
-//     new_ptr = malloc(new_size);
-//     if (!new_ptr) {
-//       perror("failed to malloc");
-//       abort();
-//     }
-//   }
-
-//   // FIXME: realloc may not need to copy data and be handled as a new buffer
-
-//   uint64_t new_ptr_bounded = (uint64_t)PAGE_ALIGN_DOWN(new_ptr);
-//   uint64_t left_fringe_len = LEFT_FRINGE_LEN(new_ptr); // actually, 0
-//   uint64_t right_fringe_len = RIGHT_FRINGE_LEN(new_size, left_fringe_len);
-
-//   snode new_entry;
-//   new_entry.lookup = new_ptr_bounded;
-//   new_entry.orig = entry->orig;
-//   new_entry.addr = (uint64_t)new_ptr;
-//   new_entry.len = new_size - (left_fringe_len + right_fringe_len);
-//   new_entry.offset = left_fringe_len;
-
-//   mmap(new_ptr, new_entry.len, PROT_READ | PROT_WRITE,
-//        MAP_PRIVATE | MAP_FIXED | MAP_ANONYMOUS, -1, 0);
-
-//   REGISTER_FAULT(new_entry.addr + new_entry.offset, new_entry.len);
-
-//   skiplist_insert_entry(&addr_list, &new_entry);
-
-//   LOG("[%s] a new entry\n", __func__);
-// #if LOGON
-//   snode_dump(&new_entry);
-// #endif
-
-//   // print_trace();
-
-//   pthread_mutex_unlock(&mu);
-
-//   return new_ptr;
-// }
 
 // What if a big buffer is sent via multiple sendmsg?
 
@@ -975,128 +588,6 @@ void handle_missing_fault(void *fault_addr) {
     perror("uffdio wake");
     assert(0);
   }
-
-  return;
-
-  // pthread_mutex_lock(&mu);
-
-#if 0
-  const void *src_ptr_for_fault_page =
-      (void *)(fault_buffer_entry->orig +
-               ((uint64_t)fault_page_start_addr - fault_buffer_entry->addr));
-
-  const char is_first_page =
-      (fault_buffer_entry->addr + fault_buffer_entry->offset ==
-       (uint64_t)fault_page_start_addr);
-  const char is_last_page =
-      (fault_buffer_entry->addr + fault_buffer_entry->offset +
-           fault_buffer_entry->len ==
-       (uint64_t)fault_page_start_addr + PAGE_SIZE);
-
-  struct uffdio_copy uffdio_copy;
-  uffdio_copy.mode = 0; // UFFDIO_COPY_MODE_DONTWAKE;
-
-  if (is_first_page) {
-    uffdio_copy.dst = fault_buffer_entry->addr + fault_buffer_entry->offset;
-    uffdio_copy.src = fault_buffer_entry->orig + fault_buffer_entry->offset;
-
-    if (fault_buffer_entry->len - PAGE_SIZE > OPT_THRESHOLD) {
-      uffdio_copy.len = PAGE_SIZE;
-
-      fault_buffer_entry->offset += PAGE_SIZE;
-      fault_buffer_entry->len -= PAGE_SIZE;
-    } else {
-      uffdio_copy.len = fault_buffer_entry->len;
-
-      LOG("[%s] %p is deleted\n", __func__, fault_buffer_entry->lookup);
-      skiplist_delete(&addr_list, fault_buffer_entry->lookup);
-    }
-  } else if (is_last_page) {
-    if (fault_buffer_entry->len - PAGE_SIZE > OPT_THRESHOLD) {
-      fault_buffer_entry->len -= PAGE_SIZE;
-
-      uffdio_copy.dst = fault_page_start_addr;
-      uffdio_copy.src = src_ptr_for_fault_page;
-      uffdio_copy.len = PAGE_SIZE;
-
-    } else {
-      uffdio_copy.dst = fault_buffer_entry->addr + fault_buffer_entry->offset;
-      uffdio_copy.src = fault_buffer_entry->orig + fault_buffer_entry->offset;
-      uffdio_copy.len = fault_buffer_entry->len;
-
-      LOG("[%s] %p is deleted\n", __func__, fault_buffer_entry->lookup);
-      skiplist_delete(&addr_list, fault_buffer_entry->lookup);
-    }
-
-  } else {
-    snode second_part_entry;
-    second_part_entry.lookup = (uint64_t)fault_page_start_addr + PAGE_SIZE;
-    second_part_entry.orig = (uint64_t)fault_buffer_entry->orig;
-    second_part_entry.addr = (uint64_t)fault_page_start_addr + PAGE_SIZE;
-    second_part_entry.len = fault_buffer_entry->addr +
-                            fault_buffer_entry->offset +
-                            fault_buffer_entry->len - second_part_entry.addr;
-    second_part_entry.offset = 0;
-
-    fault_buffer_entry->len -= second_part_entry.len + PAGE_SIZE;
-
-    if (fault_buffer_entry->len > OPT_THRESHOLD) {
-      uffdio_copy.dst = fault_page_start_addr;
-      uffdio_copy.src = src_ptr_for_fault_page;
-      uffdio_copy.len = PAGE_SIZE;
-    } else {
-      uffdio_copy.dst = fault_buffer_entry->addr + fault_buffer_entry->offset;
-      uffdio_copy.src = fault_buffer_entry->orig + fault_buffer_entry->offset;
-      uffdio_copy.len = fault_buffer_entry->len + PAGE_SIZE;
-
-      LOG("[%s] %p is deleted\n", __func__, fault_buffer_entry->lookup);
-      skiplist_delete(&addr_list, fault_buffer_entry->lookup);
-    }
-
-    if (second_part_entry.len > OPT_THRESHOLD) {
-      skiplist_insert_entry(&addr_list, &second_part_entry);
-    } else {
-      uffdio_copy.len += second_part_entry.len;
-    }
-  }
-
-  num_faults++;
-
-  // LOG("[%s] will copy src: %p-%p, dst: %p-%p, len: %lu\n", __func__,
-  //     uffdio_copy.src, uffdio_copy.src + uffdio_copy.len, uffdio_copy.dst,
-  //     uffdio_copy.dst + uffdio_copy.len, uffdio_copy.len);
-  void *ret =
-      mmap(uffdio_copy.dst, uffdio_copy.len, PROT_READ | PROT_WRITE,
-           MAP_PRIVATE | MAP_FIXED | MAP_ANONYMOUS | MAP_POPULATE, -1, 0);
-
-  libc_memcpy(uffdio_copy.dst, uffdio_copy.src, uffdio_copy.len);
-
-  // do {
-  //   if (ioctl(uffd, UFFDIO_COPY, &uffdio_copy) == -1) {
-  //     if (errno != EAGAIN) {
-  //       perror("userfaultfd copy error");
-  //       abort();
-  //     } else {
-  //       printf("copied=%lu input=%lu\n", uffdio_copy.copy, uffdio_copy.len);
-  //     }
-  //   }
-  // } while (errno == EAGAIN && uffdio_copy.copy != uffdio_copy.len);
-
-  LOG("[%s] copy src: %p-%p, dst: %p-%p, len: %lu\n", __func__, uffdio_copy.src,
-      uffdio_copy.src + uffdio_copy.len, uffdio_copy.dst,
-      uffdio_copy.dst + uffdio_copy.len, uffdio_copy.len);
-
-  // UNREGISTER_FAULT(uffdio_copy.dst, uffdio_copy.len);
-
-  struct uffdio_range range;
-  range.start = uffdio_copy.dst;
-  range.len = uffdio_copy.len;
-
-  if (ioctl(uffd, UFFDIO_WAKE, &range) < 0) {
-    perror("uffdio wake");
-    assert(0);
-  }
-#endif
 }
 
 void *handle_fault() {
@@ -1175,7 +666,7 @@ void *handle_fault() {
     }
 
     nmsgs = nread / sizeof(struct uffd_msg);
-    for (i = 0; i < nmsgs; i++) {
+    for (i = 0; i < nmsgs; ++i) {
       if (msg[i].event & UFFD_EVENT_PAGEFAULT) {
         // LOG("page fault event\n");
         fault_addr = (uint64_t)msg[i].arg.pagefault.address;
