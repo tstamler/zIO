@@ -314,7 +314,7 @@ void *memcpy(void *dest, const void *src, size_t n) {
         // read permission
         void *ret =
             mmap(src_entry->addr + src_entry->offset, src_entry->len,
-                 PROT_READ | PROT_WRITE,
+                 PROT_READ,
                  MAP_PRIVATE | MAP_FIXED | MAP_ANONYMOUS | MAP_POPULATE, -1, 0);
       }
     }
