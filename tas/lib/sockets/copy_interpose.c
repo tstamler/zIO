@@ -31,13 +31,13 @@
 #include <string.h>
 #define __USE_GNU
 #include <assert.h>
-#include <signal.h>
 #include <dlfcn.h>
 #include <execinfo.h>
 #include <fcntl.h>
 #include <linux/userfaultfd.h>
 #include <poll.h>
 #include <pthread.h>
+#include <signal.h>
 #include <skiplist.h>
 #include <sys/ioctl.h>
 #include <sys/mman.h>
@@ -113,7 +113,7 @@
     }                                                                          \
   } while (0)
 
-#define REGISTER_WP_FAULT(reg_start, reg_len)                                     \
+#define REGISTER_WP_FAULT(reg_start, reg_len)                                  \
   do {                                                                         \
   } while (0)
 
@@ -290,28 +290,33 @@ void *memcpy(void *dest, const void *src, size_t n) {
   const uint64_t core_src_buffer_addr = src + LEFT_FRINGE_LEN(src);
   const uint64_t core_dst_buffer_addr = dest + LEFT_FRINGE_LEN(dest);
 
-  snode *exist = skiplist_search_buffer_fallin(&addr_list, core_dst_buffer_addr);
+  snode *exist =
+      skiplist_search_buffer_fallin(&addr_list, core_dst_buffer_addr);
   if (exist) {
     void *ret =
-      mmap(exist->addr + exist->offset, exist->len, PROT_READ | PROT_WRITE,
-          MAP_PRIVATE | MAP_FIXED | MAP_ANONYMOUS | MAP_POPULATE, -1, 0);
+        mmap(exist->addr + exist->offset, exist->len, PROT_READ | PROT_WRITE,
+             MAP_PRIVATE | MAP_FIXED | MAP_ANONYMOUS | MAP_POPULATE, -1, 0);
     skiplist_delete(&addr_list, exist);
   }
 
-  snode *src_entry = skiplist_search_buffer_fallin(&addr_list, core_src_buffer_addr);
+  snode *src_entry =
+      skiplist_search_buffer_fallin(&addr_list, core_src_buffer_addr);
   if (src_entry) {
     if (src_entry->orig == src_entry->addr) {
-      struct uffdio_register uffdio_register;                                    
-      uffdio_register.range.start = (uint64_t)(src_entry->addr + src_entry->offset);
+      struct uffdio_register uffdio_register;
+      uffdio_register.range.start =
+          (uint64_t)(src_entry->addr + src_entry->offset);
       uffdio_register.range.len = (uint64_t)src_entry->len;
       uffdio_register.mode = UFFDIO_REGISTER_MODE_WP;
       uffdio_register.ioctls = 0;
-      if (ioctl(uffd, UFFDIO_REGISTER, &uffdio_register) == -1) {                
-        // If the kernel did not support UFFDIO_REGISTER_MODE_WP, remap with a read permission
+      if (ioctl(uffd, UFFDIO_REGISTER, &uffdio_register) == -1) {
+        // If the kernel did not support UFFDIO_REGISTER_MODE_WP, remap with a
+        // read permission
         void *ret =
-          mmap(src_entry->addr + src_entry->offset, src_entry->len, PROT_READ | PROT_WRITE,
-              MAP_PRIVATE | MAP_FIXED | MAP_ANONYMOUS | MAP_POPULATE, -1, 0);
-      }                                                                          
+            mmap(src_entry->addr + src_entry->offset, src_entry->len,
+                 PROT_READ | PROT_WRITE,
+                 MAP_PRIVATE | MAP_FIXED | MAP_ANONYMOUS | MAP_POPULATE, -1, 0);
+      }
     }
 
     size_t left_fringe_len = LEFT_FRINGE_LEN(dest);
@@ -823,7 +828,8 @@ ssize_t recvmsg(int sockfd, struct msghdr *msg, int flags) {
       snode *entry = skiplist_search(&addr_list, new_entry.lookup);
 
       if (entry) {
-        //TODO: copy the original to buffers that tracking the previous original buffer?
+        // TODO: copy the original to buffers that tracking the previous
+        // original buffer?
         entry->orig = new_entry.orig;
         entry->addr = new_entry.addr;
         entry->len = new_entry.len;
@@ -887,22 +893,28 @@ void handle_missing_fault(void *fault_addr) {
   }
 
   void *copy_dst = fault_page_start_addr;
-  void *copy_src = fault_buffer_entry->orig + ((long long)fault_page_start_addr -
-                                          (long long)fault_buffer_entry->addr);
+  void *copy_src =
+      fault_buffer_entry->orig +
+      ((long long)fault_page_start_addr - (long long)fault_buffer_entry->addr);
   size_t copy_len = PAGE_SIZE;
 
-  if (fault_buffer_entry->addr + fault_buffer_entry->offset == fault_page_start_addr) {
+  if (fault_buffer_entry->addr + fault_buffer_entry->offset ==
+      fault_page_start_addr) {
     fault_buffer_entry->offset += PAGE_SIZE;
     fault_buffer_entry->len -= PAGE_SIZE;
 
     if (fault_buffer_entry->len <= OPT_THRESHOLD) {
-      copy_dst = fault_buffer_entry->addr + fault_buffer_entry->offset - PAGE_SIZE;
-      copy_src = fault_buffer_entry->orig + fault_buffer_entry->offset - PAGE_SIZE;
+      copy_dst =
+          fault_buffer_entry->addr + fault_buffer_entry->offset - PAGE_SIZE;
+      copy_src =
+          fault_buffer_entry->orig + fault_buffer_entry->offset - PAGE_SIZE;
       copy_len = fault_buffer_entry->len + PAGE_SIZE;
 
       skiplist_delete(&addr_list, fault_buffer_entry->lookup);
     }
-  } else if (fault_buffer_entry->addr + fault_buffer_entry->offset + fault_buffer_entry->len == fault_page_start_addr + PAGE_SIZE) {
+  } else if (fault_buffer_entry->addr + fault_buffer_entry->offset +
+                 fault_buffer_entry->len ==
+             fault_page_start_addr + PAGE_SIZE) {
     fault_buffer_entry->len -= PAGE_SIZE;
 
     if (fault_buffer_entry->len <= OPT_THRESHOLD) {
@@ -917,8 +929,13 @@ void handle_missing_fault(void *fault_addr) {
     second_tracked_buffer.lookup = fault_page_start_addr + PAGE_SIZE;
     second_tracked_buffer.orig = fault_buffer_entry->orig;
     second_tracked_buffer.addr = fault_buffer_entry->addr;
-    second_tracked_buffer.len = fault_buffer_entry->len - (uint64_t)(fault_page_start_addr - fault_buffer_entry->addr - fault_buffer_entry->offset) - PAGE_SIZE;
-    second_tracked_buffer.offset = fault_page_start_addr + PAGE_SIZE - fault_buffer_entry->addr;
+    second_tracked_buffer.len =
+        fault_buffer_entry->len -
+        (uint64_t)(fault_page_start_addr - fault_buffer_entry->addr -
+                   fault_buffer_entry->offset) -
+        PAGE_SIZE;
+    second_tracked_buffer.offset =
+        fault_page_start_addr + PAGE_SIZE - fault_buffer_entry->addr;
 
     fault_buffer_entry->len -= second_tracked_buffer.len + PAGE_SIZE;
 
@@ -944,9 +961,7 @@ void handle_missing_fault(void *fault_addr) {
   libc_memcpy(copy_dst, copy_src, copy_len);
 
   LOG("[%s] copy from the original: %p-%p -> %p-%p, len: %lu\n", __func__,
-      copy_src, copy_src + copy_len,
-      copy_dst, copy_dst + copy_len,
-      copy_len);
+      copy_src, copy_src + copy_len, copy_dst, copy_dst + copy_len, copy_len);
 
   struct uffdio_range range;
   range.start = fault_page_start_addr;
@@ -955,7 +970,8 @@ void handle_missing_fault(void *fault_addr) {
   num_faults++;
 
   if (ioctl(uffd, UFFDIO_WAKE, &range) < 0) {
-    printf("[%s] range.start: %p, range.len: %lu\n", __func__, range.start, range.len);
+    printf("[%s] range.start: %p, range.len: %lu\n", __func__, range.start,
+           range.len);
     perror("uffdio wake");
     assert(0);
   }
@@ -1209,9 +1225,9 @@ void *handle_fault() {
   }
 }
 
-static void handler(int nSignum, siginfo_t* si, void* vcontext) {
+static void handler(int nSignum, siginfo_t *si, void *vcontext) {
   printf("%s\n", __func__);
-  ucontext_t* context = (ucontext_t*)vcontext;
+  ucontext_t *context = (ucontext_t *)vcontext;
   context->uc_mcontext.gregs[REG_RIP]++;
 }
 
