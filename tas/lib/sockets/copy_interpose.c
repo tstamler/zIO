@@ -21,7 +21,7 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-
+#define _GNU_SOURCE
 #include <asm-generic/errno-base.h>
 #include <errno.h>
 #include <stdarg.h>
@@ -57,7 +57,7 @@
 #define PAGE_SIZE sysconf(_SC_PAGE_SIZE)
 #define PAGE_MASK ~(PAGE_SIZE - 1) // 0xfffffffff000
 
-#define MAX_UFFD_MSGS 1024
+#define MAX_UFFD_MSGS 1
 
 #define UFFD_PROTO
 
@@ -113,10 +113,6 @@
     }                                                                          \
   } while (0)
 
-#define REGISTER_WP_FAULT(reg_start, reg_len)                                  \
-  do {                                                                         \
-  } while (0)
-
 #define UNREGISTER_FAULT(reg_start, reg_len)                                   \
   do {                                                                         \
     struct uffdio_range uffdio_unregister;                                     \
@@ -129,7 +125,7 @@
     }                                                                          \
   } while (0)
 
-#define PWRITE_IOV_MAX_CNT 10000
+#define IOV_MAX_CNT 10000
 
 long uffd = -1;
 
@@ -186,7 +182,7 @@ ssize_t pwrite(int sockfd, const void *buf, size_t count, off_t offset) {
   const uint64_t left_fringe_len = LEFT_FRINGE_LEN(buf);
   const uint64_t right_fringe_len = RIGHT_FRINGE_LEN(count, left_fringe_len);
 
-  struct iovec iovec[PWRITE_IOV_MAX_CNT];
+  struct iovec iovec[IOV_MAX_CNT];
   int iovcnt = 0;
 
   uint64_t off = 0;
@@ -195,20 +191,25 @@ ssize_t pwrite(int sockfd, const void *buf, size_t count, off_t offset) {
   while (remaining_len > 0) {
     snode *entry =
         skiplist_search_buffer_fallin(&addr_list, (uint64_t)buf + off);
-    iovec[iovcnt].iov_base =
-        (void *)((entry ? entry->orig : (uint64_t)buf) + off);
-    iovec[iovcnt].iov_len =
-        MIN(remaining_len, entry ? entry->len
-                                 : (LEFT_FRINGE_LEN(buf + off) == 0
-                                        ? PAGE_SIZE
-                                        : LEFT_FRINGE_LEN(buf + off)));
+
+    if (entry) {
+      iovec[iovcnt].iov_base = entry->orig + (buf - entry->addr) + off;
+      iovec[iovcnt].iov_len = entry->len;
+    } else {
+      iovec[iovcnt].iov_base = buf + off;
+      iovec[iovcnt].iov_len = LEFT_FRINGE_LEN(iovec[iovcnt].iov_base) == 0
+                                  ? PAGE_SIZE
+                                  : LEFT_FRINGE_LEN(iovec[iovcnt].iov_base);
+    }
+
+    iovec[iovcnt].iov_len = MIN(remaining_len, iovec[iovcnt].iov_len);
 
     off += iovec[iovcnt].iov_len;
     remaining_len -= iovec[iovcnt].iov_len;
 
-    iovcnt++;
+    ++iovcnt;
 
-    if (iovcnt >= PWRITE_IOV_MAX_CNT) {
+    if (iovcnt >= IOV_MAX_CNT) {
       errno = ENOMEM;
       perror("pwrite iov is full");
       abort();
@@ -281,15 +282,12 @@ void *memcpy(void *dest, const void *src, size_t n) {
         if (errno == EINVAL) {
           LOG("[%s] write-protection fault fault by userfaultfd may not be"
               "supported by the current kernel\n");
-          // If the kernel did not support UFFDIO_REGISTER_MODE_WP, remap with a
-          // read permission
-          // void *ret =
-          //     mmap(src_entry->addr + src_entry->offset, src_entry->len,
-          //          PROT_READ,
-          //          MAP_PRIVATE | MAP_FIXED | MAP_ANONYMOUS | MAP_POPULATE,
-          //          -1, 0);
         }
+        perror("register with WP");
+        abort();
       }
+
+      memset(&src[src_entry->offset + src_entry->len / 2], 1, 1);
     }
 
     size_t left_fringe_len = LEFT_FRINGE_LEN(dest);
@@ -371,50 +369,75 @@ void free(void *ptr) {
 // What if a big buffer is sent via multiple sendmsg?
 
 ssize_t sendmsg(int sockfd, const struct msghdr *msg, int flags) {
-  ssize_t ret = libc_sendmsg(sockfd, msg, flags);
-  LOG("[%s] msg sent: %p-%p, %ld\n", __func__, msg->msg_iov[0].iov_base,
-      msg->msg_iov[0].iov_base + msg->msg_iov[0].iov_len,
-      msg->msg_iov[0].iov_len);
-  // int i;
-  // for (i = 0; i < msg->msg_iov[0].iov_len; i++)
-  //   printf("%c", ((char *)(msg->msg_iov[0].iov_base))[i]);
-  // printf("\n");
+  ensure_init();
+
+  pthread_mutex_lock(&mu);
+
+  ssize_t ret = 0;
+
+  int i;
+  for (i = 0; i < msg->msg_iovlen; ++i) {
+    void *buf = msg->msg_iov[i].iov_base;
+    uint64_t count = msg->msg_iov[i].iov_len;
+
+    if (count > OPT_THRESHOLD) {
+      struct iovec iovec[IOV_MAX_CNT];
+      int iovcnt = 0;
+
+      uint64_t off = 0;
+      uint64_t remaining_len = count;
+
+      while (remaining_len > 0) {
+        snode *entry =
+            skiplist_search_buffer_fallin(&addr_list, (uint64_t)buf + off);
+
+        if (entry) {
+          iovec[iovcnt].iov_base = entry->orig + (buf - entry->addr) + off;
+          iovec[iovcnt].iov_len = entry->len;
+        } else {
+          iovec[iovcnt].iov_base = buf + off;
+          iovec[iovcnt].iov_len = LEFT_FRINGE_LEN(iovec[iovcnt].iov_base) == 0
+                                      ? PAGE_SIZE
+                                      : LEFT_FRINGE_LEN(iovec[iovcnt].iov_base);
+        }
+
+        iovec[iovcnt].iov_len = MIN(remaining_len, iovec[iovcnt].iov_len);
+
+        off += iovec[iovcnt].iov_len;
+        remaining_len -= iovec[iovcnt].iov_len;
+
+        ++iovcnt;
+
+        if (iovcnt >= IOV_MAX_CNT) {
+          errno = ENOMEM;
+          perror("iov is full");
+          abort();
+        }
+      }
+
+      struct msghdr mh;
+      libc_memcpy(&mh, msg, sizeof(struct msghdr));
+      mh.msg_iov = iovec;
+      mh.msg_iovlen = iovcnt;
+
+      ssize_t sent = libc_sendmsg(sockfd, &mh, flags);
+      if (sent < 0) {
+        perror("send error");
+        abort();
+      }
+      ret += sent;
+    } else {
+      ssize_t sent = libc_send(sockfd, buf, count, flags);
+      if (sent < 0) {
+        perror("send error");
+        abort();
+      }
+      ret += sent;
+    }
+  }
+
+  pthread_mutex_unlock(&mu);
   return ret;
-
-  // ensure_init();
-
-  // pthread_mutex_lock(&mu);
-
-  // int i;
-  // for (i = 0; i < msg->msg_iovlen; i++) {
-  //   if (msg->msg_iov[i].iov_len > OPT_THRESHOLD) {
-  //     snode *entry = skiplist_search(&addr_list,
-  //                                    PAGE_ALIGN_DOWN(msg->msg_iov[i].iov_base));
-
-  //     if (entry) {
-  //       print(msg->msg_iov[i].iov_base, 0, msg->msg_iov[i].iov_len);
-  //       snode_dump(entry);
-
-  //       msg->msg_iov[i].iov_base =
-  //           entry->orig + ((uint64_t)msg->msg_iov[i].iov_base - entry->addr);
-  //     } else {
-  //       entry =
-  //           skiplist_search_buffer_fallin(&addr_list,
-  //           msg->msg_iov[i].iov_base);
-  //       if (entry) {
-  //         msg->msg_iov[i].iov_base =
-  //             entry->orig + ((uint64_t)msg->msg_iov[i].iov_base -
-  //             entry->addr);
-  //       }
-  //     }
-  //     printf("[%s] %p-%p, len: %lu\n", __func__, msg->msg_iov[i].iov_base,
-  //            msg->msg_iov[i].iov_base + msg->msg_iov[i].iov_len,
-  //            msg->msg_iov[i].iov_len);
-  //   }
-  // }
-
-  // pthread_mutex_unlock(&mu);
-  // return libc_sendmsg(sockfd, msg, flags);
 }
 
 ssize_t recvmsg(int sockfd, struct msghdr *msg, int flags) {
@@ -674,27 +697,15 @@ void *handle_fault() {
 
         if (fault_flags & UFFD_PAGEFAULT_FLAG_WP) {
           LOG("[%s] The original buffer is touched\n", __func__);
+          abort();
 
-          snode *original_entry = skiplist_search(
-              &addr_list, (uint64_t)PAGE_ALIGN_DOWN(fault_addr));
-          if (!original_entry) {
-            fprintf(stderr, "invalid codepath\n");
-            abort();
-          }
-
-          struct fault_copy_args_t args;
-          args.original_entry = original_entry;
-          args.fault_addr = (void *)fault_addr;
-          skiplist_walkthrough_fault_copy(&addr_list, copy_from_original,
-                                          &args);
-
-          struct uffdio_writeprotect wp;
-          wp.range.start = (uint64_t)PAGE_ALIGN_DOWN(fault_addr);
-          wp.range.len = PAGE_SIZE;
-          if (ioctl(uffd, UFFDIO_WRITEPROTECT, &wp) == -1) {
-            perror("Set write protection fail");
-            abort();
-          }
+          // struct uffdio_writeprotect wp;
+          // wp.range.start = (uint64_t)PAGE_ALIGN_DOWN(fault_addr);
+          // wp.range.len = PAGE_SIZE;
+          // if (ioctl(uffd, UFFDIO_WRITEPROTECT, &wp) == -1) {
+          //   perror("Set write protection fail");
+          //   abort();
+          // }
 
         } else {
           LOG("[%s] handling fault at %p\n", __func__, fault_addr);
@@ -714,20 +725,6 @@ void *handle_fault() {
       }
     }
   }
-}
-
-static void handler(int nSignum, siginfo_t *si, void *vcontext) {
-  printf("%s\n", __func__);
-  ucontext_t *context = (ucontext_t *)vcontext;
-  context->uc_mcontext.gregs[REG_RIP]++;
-}
-
-static void setup_signal_handler() {
-  struct sigaction action;
-  memset(&action, 0, sizeof(struct sigaction));
-  action.sa_flags = SA_SIGINFO;
-  action.sa_sigaction = handler;
-  sigaction(SIGSEGV, &action, NULL);
 }
 
 static void init(void) {
@@ -761,18 +758,14 @@ static void init(void) {
 
   struct uffdio_api uffdio_api;
   uffdio_api.api = UFFD_API;
-  uffdio_api.features =
-      0; // UFFD_FEATURE_PAGEFAULT_FLAG_WP |  UFFD_FEATURE_MISSING_SHMEM |
-         // UFFD_FEATURE_MISSING_HUGETLBFS;// | UFFD_FEATURE_EVENT_UNMAP |
-         // UFFD_FEATURE_EVENT_REMOVE;
+  uffdio_api.features = UFFD_FEATURE_PAGEFAULT_FLAG_WP;
+  // 0; //  |  UFFD_FEATURE_MISSING_SHMEM | UFFD_FEATURE_PAGEFAULT_FLAG_WP|
+  //  UFFD_FEATURE_MISSING_HUGETLBFS;// | UFFD_FEATURE_EVENT_UNMAP |
+  //  UFFD_FEATURE_EVENT_REMOVE;
   uffdio_api.ioctls = 0;
   if (ioctl(uffd, UFFDIO_API, &uffdio_api) == -1) {
     perror("ioctl uffdio_api");
     abort();
-  }
-
-  if (!(uffdio_api.ioctls & (1 << _UFFDIO_WRITEPROTECT))) {
-    setup_signal_handler();
   }
 
   if (pthread_create(&fault_thread, NULL, handle_fault, 0) != 0) {
