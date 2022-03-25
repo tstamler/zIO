@@ -21,7 +21,6 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-#define _GNU_SOURCE
 #include <asm-generic/errno-base.h>
 #include <errno.h>
 #include <stdarg.h>
@@ -257,10 +256,9 @@ void *memcpy(void *dest, const void *src, size_t n) {
       dest + n, n);
 
   const uint64_t core_src_buffer_addr = src + LEFT_FRINGE_LEN(src);
-  const uint64_t core_dst_buffer_addr = dest + LEFT_FRINGE_LEN(dest);
+  uint64_t core_dst_buffer_addr = dest + LEFT_FRINGE_LEN(dest);
 
-  snode *exist =
-      skiplist_search_buffer_fallin(&addr_list, core_dst_buffer_addr);
+  snode *exist = skiplist_search(&addr_list, core_dst_buffer_addr);
   if (exist) {
     void *ret =
         mmap(exist->addr + exist->offset, exist->len, PROT_READ | PROT_WRITE,
@@ -286,8 +284,6 @@ void *memcpy(void *dest, const void *src, size_t n) {
         perror("register with WP");
         abort();
       }
-
-      memset(&src[src_entry->offset + src_entry->len / 2], 1, 1);
     }
 
     size_t left_fringe_len = LEFT_FRINGE_LEN(dest);
@@ -299,9 +295,15 @@ void *memcpy(void *dest, const void *src, size_t n) {
       }
     }
 
+    core_dst_buffer_addr = dest + left_fringe_len;
+
     if (left_fringe_len > 0) {
       LOG("[%s] copy the left fringe %p-%p->%p-%p len: %zu\n", __func__, src,
           src + left_fringe_len, dest, dest + left_fringe_len, left_fringe_len);
+
+      // void *ret = mmap(
+      //     dest, left_fringe_len, PROT_READ | PROT_WRITE,
+      //     MAP_PRIVATE | MAP_FIXED | MAP_ANONYMOUS | MAP_POPULATE, -1, 0);
       libc_memcpy(dest, src, left_fringe_len);
     }
 
@@ -314,20 +316,28 @@ void *memcpy(void *dest, const void *src, size_t n) {
         MIN(src_entry->len, n - (left_fringe_len + right_fringe_len));
     dest_entry.offset = left_fringe_len;
 
-    skiplist_insert_entry(&addr_list, &dest_entry);
-    void *ret = mmap(dest_entry.addr + dest_entry.offset, dest_entry.len,
-                     PROT_READ | PROT_WRITE,
-                     MAP_PRIVATE | MAP_FIXED | MAP_ANONYMOUS, -1, 0);
-    REGISTER_FAULT(dest_entry.addr + dest_entry.offset, dest_entry.len);
+    size_t remaining_len = n - left_fringe_len;
 
-    LOG("[%s] tracking buffer %p-%p len:%lu\n", __func__,
-        dest_entry.addr + dest_entry.offset,
-        dest_entry.addr + dest_entry.offset + dest_entry.len, dest_entry.len);
+    if (dest_entry.len > OPT_THRESHOLD) {
+      skiplist_insert_entry(&addr_list, &dest_entry);
+      void *ret = mmap(dest_entry.addr + dest_entry.offset, dest_entry.len,
+                       PROT_READ | PROT_WRITE,
+                       MAP_PRIVATE | MAP_FIXED | MAP_ANONYMOUS, -1, 0);
+      REGISTER_FAULT(dest_entry.addr + dest_entry.offset, dest_entry.len);
 
-    size_t remaining_len = n - left_fringe_len - dest_entry.len;
+      LOG("[%s] tracking buffer %p-%p len:%lu\n", __func__,
+          dest_entry.addr + dest_entry.offset,
+          dest_entry.addr + dest_entry.offset + dest_entry.len, dest_entry.len);
+
+      remaining_len -= dest_entry.len;
+    }
+    
     LOG("[%s] remaining_len %zu\n", __func__, remaining_len);
 
     if (remaining_len > 0) {
+      // void *ret = mmap(
+      //     dest + (n - remaining_len), remaining_len, PROT_READ | PROT_WRITE,
+      //     MAP_PRIVATE | MAP_FIXED | MAP_ANONYMOUS | MAP_POPULATE, -1, 0);
       libc_memcpy(dest + (n - remaining_len), src + (n - remaining_len),
                   remaining_len);
       LOG("[%s] copy rest %p-%p len:%lu\n", __func__,
@@ -365,8 +375,6 @@ void free(void *ptr) {
   // }
   return libc_free(ptr);
 }
-
-// What if a big buffer is sent via multiple sendmsg?
 
 ssize_t sendmsg(int sockfd, const struct msghdr *msg, int flags) {
   ensure_init();
@@ -594,10 +602,10 @@ void handle_missing_fault(void *fault_addr) {
       mmap(copy_dst, copy_len, PROT_READ | PROT_WRITE,
            MAP_PRIVATE | MAP_FIXED | MAP_ANONYMOUS | MAP_POPULATE, -1, 0);
 
-  libc_memcpy(copy_dst, copy_src, copy_len);
-
   LOG("[%s] copy from the original: %p-%p -> %p-%p, len: %lu\n", __func__,
       copy_src, copy_src + copy_len, copy_dst, copy_dst + copy_len, copy_len);
+
+  libc_memcpy(copy_dst, copy_src, copy_len);
 
   struct uffdio_range range;
   range.start = fault_page_start_addr;
@@ -697,6 +705,7 @@ void *handle_fault() {
 
         if (fault_flags & UFFD_PAGEFAULT_FLAG_WP) {
           LOG("[%s] The original buffer is touched\n", __func__);
+          printf("caught a write-protected page fault\n");
           abort();
 
           // struct uffdio_writeprotect wp;
