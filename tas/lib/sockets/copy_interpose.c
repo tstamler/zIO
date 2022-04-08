@@ -61,6 +61,8 @@
 
 #define UFFD_PROTO
 
+#define ENABLED_LOCK 0
+
 #define LOGON 0
 #if LOGON
 #define LOG(...) fprintf(stderr, __VA_ARGS__)
@@ -127,7 +129,7 @@
 
 #define copy_from_original(orig_addr)                                          \
   do {                                                                         \
-    LOG("[%s] the original buffer %p exists\n", __func__, orig_addr);       \
+    LOG("[%s] the original buffer %p exists\n", __func__, orig_addr);          \
     snode *entry = skiplist_front(&addr_list);                                 \
     while (entry) {                                                            \
       snode *entry_to_be_deleted = 0;                                          \
@@ -139,17 +141,17 @@
         libc_memcpy(entry->addr + entry->offset, entry->orig + entry->offset,  \
                     entry->len);                                               \
                                                                                \
-        LOG("[%s] copy from %p-%p to %p-%p, len: %lu\n", __func__,          \
-               entry->orig + entry->offset,                                    \
-               entry->orig + entry->offset + entry->len,                       \
-               entry->addr + entry->offset,                                    \
-               entry->addr + entry->offset + entry->len, entry->len);          \
+        LOG("[%s] copy from %p-%p to %p-%p, len: %lu\n", __func__,             \
+            entry->orig + entry->offset,                                       \
+            entry->orig + entry->offset + entry->len,                          \
+            entry->addr + entry->offset,                                       \
+            entry->addr + entry->offset + entry->len, entry->len);             \
                                                                                \
         entry_to_be_deleted = entry;                                           \
       }                                                                        \
       entry = snode_get_next(&addr_list, entry);                               \
       if (entry_to_be_deleted)                                                 \
-        skiplist_delete(&addr_list, entry_to_be_deleted->lookup);                      \
+        skiplist_delete(&addr_list, entry_to_be_deleted->lookup);              \
     }                                                                          \
   } while (0)
 
@@ -159,7 +161,9 @@ long uffd = -1;
 
 pthread_t fault_thread, stats_thread;
 
+#if ENABLED_LOCK
 pthread_mutex_t mu;
+#endif
 
 static inline void ensure_init(void);
 
@@ -205,7 +209,9 @@ ssize_t pwrite(int sockfd, const void *buf, size_t count, off_t offset) {
     return libc_pwrite(sockfd, buf, count, offset);
   }
 
+#if ENABLED_LOCK
   pthread_mutex_lock(&mu);
+#endif
 
   const uint64_t left_fringe_len = LEFT_FRINGE_LEN(buf);
   const uint64_t right_fringe_len = RIGHT_FRINGE_LEN(count, left_fringe_len);
@@ -262,7 +268,9 @@ ssize_t pwrite(int sockfd, const void *buf, size_t count, off_t offset) {
 
   ssize_t ret = libc_pwritev(sockfd, iovec, iovcnt, offset);
 
+#if ENABLED_LOCK
   pthread_mutex_unlock(&mu);
+#endif
 
   return ret;
 }
@@ -304,11 +312,13 @@ void *memcpy(void *dest, const void *src, size_t n) {
     return libc_memcpy(dest, src, n);
   }
 
+#if ENABLED_LOCK
   if (recursive_copy == 0)
     pthread_mutex_lock(&mu);
+#endif
 
-  LOG("[%s] copying %p-%p to %p-%p, size %zu\n", __func__, src, src + n,
-         dest, dest + n, n);
+  LOG("[%s] copying %p-%p to %p-%p, size %zu\n", __func__, src, src + n, dest,
+      dest + n, n);
 
   uint64_t core_dst_buffer_addr = dest + LEFT_FRINGE_LEN(dest);
 
@@ -328,8 +338,7 @@ void *memcpy(void *dest, const void *src, size_t n) {
 
   if (left_fringe_len > 0) {
     LOG("[%s] copy the left fringe %p-%p->%p-%p len: %zu\n", __func__, src,
-           src + left_fringe_len, dest, dest + left_fringe_len,
-           left_fringe_len);
+        src + left_fringe_len, dest, dest + left_fringe_len, left_fringe_len);
 
     libc_memcpy(dest, src, left_fringe_len);
   }
@@ -379,9 +388,8 @@ void *memcpy(void *dest, const void *src, size_t n) {
       REGISTER_FAULT(dest_entry.addr + dest_entry.offset, dest_entry.len);
 
       LOG("[%s] tracking buffer %p-%p len:%lu\n", __func__,
-             dest_entry.addr + dest_entry.offset,
-             dest_entry.addr + dest_entry.offset + dest_entry.len,
-             dest_entry.len);
+          dest_entry.addr + dest_entry.offset,
+          dest_entry.addr + dest_entry.offset + dest_entry.len, dest_entry.len);
 #if LOGON
       snode_dump(&dest_entry);
 #endif
@@ -400,14 +408,16 @@ void *memcpy(void *dest, const void *src, size_t n) {
         return dest;
 
       LOG("[%s] copy rest %p-%p len:%lu\n", __func__,
-             dest + (n - remaining_len),
-             dest + (n - remaining_len) + remaining_len, remaining_len);
+          dest + (n - remaining_len),
+          dest + (n - remaining_len) + remaining_len, remaining_len);
     }
 
     ++num_fast_copy;
 
     LOG("[%s] ########## Fast copy done\n", __func__);
+#if ENABLED_LOCK
     pthread_mutex_unlock(&mu);
+#endif
 
     return dest;
   } else {
@@ -415,7 +425,9 @@ void *memcpy(void *dest, const void *src, size_t n) {
       ++num_slow_copy;
 
       LOG("[%s] ########## Slow copy done\n", __func__);
+#if ENABLED_LOCK
       pthread_mutex_unlock(&mu);
+#endif
     }
 
     return libc_memcpy(dest, src, n);
@@ -441,7 +453,9 @@ void free(void *ptr) {
 ssize_t sendmsg(int sockfd, const struct msghdr *msg, int flags) {
   ensure_init();
 
+#if ENABLED_LOCK
   pthread_mutex_lock(&mu);
+#endif
 
   ssize_t ret = 0;
 
@@ -513,7 +527,9 @@ ssize_t sendmsg(int sockfd, const struct msghdr *msg, int flags) {
     }
   }
 
+#if ENABLED_LOCK
   pthread_mutex_unlock(&mu);
+#endif
   return ret;
 }
 
@@ -522,7 +538,9 @@ ssize_t recvmsg(int sockfd, struct msghdr *msg, int flags) {
 
   ssize_t ret = libc_recvmsg(sockfd, msg, flags);
 
+#if ENABLED_LOCK
   pthread_mutex_lock(&mu);
+#endif
 
   int i;
   for (i = 0; i < msg->msg_iovlen; i++) {
@@ -548,8 +566,8 @@ ssize_t recvmsg(int sockfd, struct msghdr *msg, int flags) {
       if (0 && prev &&
           prev->addr + prev->offset + prev->len + PAGE_SIZE ==
               new_entry.addr + new_entry.offset) {
-        LOG("[%s] %p will be merged to %p-%p, %lu\n", __func__,
-               new_entry.addr, prev->addr, prev->addr + prev->len, prev->len);
+        LOG("[%s] %p will be merged to %p-%p, %lu\n", __func__, new_entry.addr,
+            prev->addr, prev->addr + prev->len, prev->len);
 
         prev->len += new_entry.len + (new_entry.offset == 0 ? 0 : PAGE_SIZE);
       } else {
@@ -558,7 +576,9 @@ ssize_t recvmsg(int sockfd, struct msghdr *msg, int flags) {
     }
   }
 
+#if ENABLED_LOCK
   pthread_mutex_unlock(&mu);
+#endif
   return ret;
 }
 
@@ -824,7 +844,9 @@ static void init(void) {
   // new tracking code
   skiplist_init(&addr_list);
 
+#if ENABLED_LOCK
   pthread_mutex_init(&mu, NULL);
+#endif
 
 #ifdef UFFD_PROTO
   uffd = syscall(__NR_userfaultfd, O_CLOEXEC | O_NONBLOCK);

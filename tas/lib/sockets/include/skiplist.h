@@ -142,19 +142,6 @@ static inline snode *skiplist_search_buffer_fallin(skiplist *list,
 
 static inline void skiplist_node_free(snode *x) {
   if (x) {
-
-    {
-      fprintf(stderr, "\tlookup: %p\n", (void *)x->lookup);
-      fprintf(stderr, "\torig: %p\n", (void *)x->orig);
-      fprintf(stderr, "\taddr: %p\n", (void *)x->addr);
-      fprintf(stderr, "\tlen: %lu\n", x->len);
-      fprintf(stderr, "\toffset: %lu\n", x->offset);
-      fprintf(stderr, "\tcore_buffer: %p-%p\n", x->addr + x->offset,
-              x->addr + x->offset + x->len);
-      fprintf(stderr, "\tcorresponding original: %p-%p\n", x->orig + x->offset,
-              x->orig + x->offset + x->len);
-    }
-
     free(x->forward);
     free(x);
   }
