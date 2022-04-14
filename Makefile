@@ -70,5 +70,5 @@ libmem_counter.so: $(call shared_objs, \
 
 clean:
 	rm -f *.o src.o \
-	  lib\copy_interpose.so lib\tas_copy_interpose.so \
-	  lib/page_fault_test.so lib/mem_counter.so 
+	  copy_interpose.so tas_copy_interpose.so \
+	  page_fault_test.so mem_counter.so 
