@@ -325,7 +325,7 @@ void *memcpy(void *dest, const void *src, size_t n) {
     pthread_mutex_lock(&mu);
 #endif
 
-  printf("[%s] copying %p-%p to %p-%p, size %zu\n", __func__, src, src + n, dest,
+  LOG("[%s] copying %p-%p to %p-%p, size %zu\n", __func__, src, src + n, dest,
       dest + n, n);
 
   uint64_t core_dst_buffer_addr = dest + LEFT_FRINGE_LEN(dest);
