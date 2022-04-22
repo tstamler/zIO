@@ -285,7 +285,7 @@ inline void *mmapcpy(void *dest, const void *src, size_t n) {
   libc_memcpy(dest, src, n);
 }
 
-inline void handle_existing_buffer(uint64_t addr) {
+void handle_existing_buffer(uint64_t addr) {
   snode *exist = skiplist_search_buffer_fallin(&addr_list, addr);
   if (exist) {
     LOG("[%s] buffer exists %p\n", __func__, addr);
@@ -325,7 +325,7 @@ void *memcpy(void *dest, const void *src, size_t n) {
     pthread_mutex_lock(&mu);
 #endif
 
-  LOG("[%s] copying %p-%p to %p-%p, size %zu\n", __func__, src, src + n, dest,
+  printf("[%s] copying %p-%p to %p-%p, size %zu\n", __func__, src, src + n, dest,
       dest + n, n);
 
   uint64_t core_dst_buffer_addr = dest + LEFT_FRINGE_LEN(dest);
@@ -335,8 +335,11 @@ void *memcpy(void *dest, const void *src, size_t n) {
 
   const uint64_t core_src_buffer_addr = src + LEFT_FRINGE_LEN(src);
 
+  /* snode *src_entry = */
+  /*     skiplist_search(&addr_list, core_src_buffer_addr); */
+  
   snode *src_entry =
-      skiplist_search_buffer_fallin(&addr_list, core_src_buffer_addr);
+      skiplist_search(&addr_list, core_src_buffer_addr);
   if (src_entry) {
 #if LOGON
     LOG("[%s] found src entry\n", __func__);
@@ -374,7 +377,7 @@ void *memcpy(void *dest, const void *src, size_t n) {
       LOG("[%s] copy the left fringe %p-%p->%p-%p len: %zu\n", __func__, src,
 	  src + left_fringe_len, dest, dest + left_fringe_len, left_fringe_len);
 
-      mmapcpy(dest, src, left_fringe_len);
+      libc_memcpy(dest, src, left_fringe_len);
     }
 
     snode dest_entry;
@@ -422,14 +425,14 @@ void *memcpy(void *dest, const void *src, size_t n) {
     ++num_slow_copy;
     
 #if ENABLED_LOCK
-      pthread_mutex_unlock(&mu);
+    pthread_mutex_unlock(&mu);
 #endif
-      
-    if (n > PAGE_SIZE) {
-      mmapcpy(dest, src, PAGE_SIZE);
-      memcpy(dest+PAGE_SIZE, src+PAGE_SIZE, n-PAGE_SIZE);
-    } else 
-      mmapcpy(dest, src, n);
+
+    size_t copy_len = LEFT_FRINGE_LEN(dest) > 0 ? LEFT_FRINGE_LEN(dest) : PAGE_SIZE;
+    //size_t copy_len = PAGE_SIZE;
+    libc_memcpy(dest, src, copy_len);
+    memcpy(dest + copy_len, src + copy_len, n - copy_len);
+    /* libc_memcpy(dest, src, n); */
   }
   
   return dest;
@@ -675,14 +678,10 @@ void handle_missing_fault(void *fault_addr) {
     }
   }
 
-  void *ret =
-      mmap(copy_dst, copy_len, PROT_READ | PROT_WRITE,
-           MAP_PRIVATE | MAP_FIXED | MAP_ANONYMOUS | MAP_POPULATE, -1, 0);
-
   LOG("[%s] copy from the original: %p-%p -> %p-%p, len: %lu\n", __func__,
       copy_src, copy_src + copy_len, copy_dst, copy_dst + copy_len, copy_len);
 
-  libc_memcpy(copy_dst, copy_src, copy_len);
+  mmapcpy(copy_dst, copy_src, copy_len);
 
   LOG("[%s] copy is done. There might be another page fault unless this is "
       "shown\n",
