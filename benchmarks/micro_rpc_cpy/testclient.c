@@ -847,14 +847,18 @@ int main(int argc, char *argv[])
         hist_fract_buckets(hist, msg_total, fracs, fracs_pos,
                 sizeof(fracs) / sizeof(fracs[0]));
 
-
-        printf("TP: total=%'.2Lf mbps  50p=%d us  90p=%d us  95p=%d us  "
+/*
+        printf("TP: total= %'.2Lf mbps  50p=%d us  90p=%d us  95p=%d us  "
                 "99p=%d us  99.9p=%d us  99.99p=%d us  flows=%lu",
                 tp_total * message_size * 8 / 1000000.,
                 hist_value(fracs_pos[0]), hist_value(fracs_pos[1]),
                 hist_value(fracs_pos[2]), hist_value(fracs_pos[3]),
                 hist_value(fracs_pos[4]), hist_value(fracs_pos[5]),
                 open_total);
+*/
+        printf("%'.2Lf",
+                tp_total * message_size * 8 / 1000000.);
+
 
 #ifdef PRINT_PERCORE
         for (i = 0; i < num_threads; i++) {
