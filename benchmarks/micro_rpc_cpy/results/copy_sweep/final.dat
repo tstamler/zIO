@@ -1,12 +1,14 @@
-Zero Copy: 14427.7 mbps
-One Copy: 11434.9 mbps
-Two Copy: 9075.74 mbps
-Four Copy: 6597.06 mbps
-Eight Copy: 4447.76 mbps
-Twelve Copy: 3274.95 mbps
-Zero Copy: 14145.8 mbps
-One Copy: 14034.1 mbps
-Two Copy: 14341 mbps
-Four Copy: 13870.7 mbps
-Eight Copy: 13038.3 mbps
-Twelve Copy: 13134.8 mbps
+Linux Results: 
+Zero Copy: 12747.9 mbps
+One Copy: 11184.9 mbps
+Two Copy: 8401.15 mbps
+Four Copy: 6396.77 mbps
+Eight Copy: 4255.09 mbps
+Twelve Copy: 3216.27 mbps
+zIO Results: 
+Zero Copy: 13100.7 mbps
+One Copy: 12994.2 mbps
+Two Copy: 12588.8 mbps
+Four Copy: 12741.9 mbps
+Eight Copy: 12413.7 mbps
+Twelve Copy: 12296.7 mbps

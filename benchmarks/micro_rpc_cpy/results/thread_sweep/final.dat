@@ -1,0 +1,10 @@
+Linux Results: 
+One Thread: 12408.9 mbps
+Two Thread: 22341.6 mbps
+Four Thread: 36983.4 mbps
+Eight Thread: 56300.3 mbps
+zIO Results: 
+One Thread: 12563.9 mbps
+Two Thread: 21852.3 mbps
+Four Thread: 37669.6 mbps
+Eight Thread: 55491.7 mbps

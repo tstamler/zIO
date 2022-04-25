@@ -1,0 +1,12 @@
+Linux Results: 
+4KB: 123225.03 req/s
+16KB: 62208.40 req/s
+64KB: 25388.77 req/s
+128KB: 4681.10 req/s
+512KB: 1015.23 req/s
+zIO Results: 
+4KB: 123225.03 req/s
+16KB: 62208.40 req/s
+64KB: 25388.77 req/s
+128KB: 4681.10 req/s
+512KB: 1015.23 req/s

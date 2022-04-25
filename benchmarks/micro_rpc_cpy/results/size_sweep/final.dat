@@ -1,0 +1,14 @@
+Linux Results: 
+8KB: 6800.62 mbps
+16KB: 11556 mbps
+32KB: 13925.2 mbps
+64KB: 13870 mbps
+128KB: 7060.43 mbps
+256KB: 5805.16 mbps
+zIO Results: 
+8KB: 6642.93 mbps
+16KB: 8080 mbps
+32KB: 9664.7 mbps
+64KB: 13936.1 mbps
+128KB: 14305.4 mbps
+256KB: 12299.5 mbps

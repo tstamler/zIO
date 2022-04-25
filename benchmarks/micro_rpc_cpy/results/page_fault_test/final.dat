@@ -1,0 +1,14 @@
+Linux Results: 
+Zero Faults: 12541.2 mbps
+One Fault: 12437 mbps
+Two Fault: 11838.4 mbps
+Four Fault: 12096.2 mbps
+Eight Fault: 12041.2 mbps
+Twelve Fault: 12050.3 mbps
+zIO Results: 
+Zero Fault: 7176.4 mbps
+One Fault: 6216.34 mbps
+Two Fault: 6280.47 mbps
+Four Fault: 5671.92 mbps
+Eight Fault: 5078.32 mbps
+Twelve Fault: 4611.32 mbps
