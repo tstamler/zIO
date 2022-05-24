@@ -51,8 +51,9 @@
 #include <utils.h>
 
 //#define OPT_THRESHOLD 0xfffffffffffffffff
-// #define OPT_THRESHOLD 1048575
-#define OPT_THRESHOLD 57343
+//#define OPT_THRESHOLD 991808
+#define OPT_THRESHOLD 983040
+//#define OPT_THRESHOLD 57343
 
 #define PAGE_SIZE sysconf(_SC_PAGE_SIZE)
 #define PAGE_MASK ~(PAGE_SIZE - 1) // 0xfffffffff000
@@ -276,8 +277,6 @@ ssize_t pwrite(int sockfd, const void *buf, size_t count, off_t offset) {
   return ret;
 }
 
-int recursive_copy = 0;
-
 inline void *mmapcpy(void *dest, const void *src, size_t n) {
   void *ret =
     mmap(dest, n, PROT_READ | PROT_WRITE,
@@ -321,7 +320,6 @@ void *memcpy(void *dest, const void *src, size_t n) {
   }
 
 #if ENABLED_LOCK
-  if (recursive_copy == 0)
     pthread_mutex_lock(&mu);
 #endif
 
@@ -330,8 +328,7 @@ void *memcpy(void *dest, const void *src, size_t n) {
 
   uint64_t core_dst_buffer_addr = dest + LEFT_FRINGE_LEN(dest);
 
-  if (recursive_copy == 0)
-    handle_existing_buffer(core_dst_buffer_addr);
+  handle_existing_buffer(core_dst_buffer_addr);
 
   const uint64_t core_src_buffer_addr = src + LEFT_FRINGE_LEN(src);
 
@@ -454,24 +451,25 @@ void free(void *ptr) {
   return libc_free(ptr);
 }
 
-ssize_t sendmsg(int sockfd, const struct msghdr *msg, int flags) {
+
+ssize_t sendmsg2(int sockfd, const struct msghdr *msg, int flags) {
   ensure_init();
 
 #if ENABLED_LOCK
   pthread_mutex_lock(&mu);
 #endif
-
-  ssize_t ret = 0;
+  
+  struct iovec iovec[IOV_MAX_CNT];
+  int iovcnt = 0;
 
   int i;
   for (i = 0; i < msg->msg_iovlen; ++i) {
     void *buf = msg->msg_iov[i].iov_base;
     uint64_t count = msg->msg_iov[i].iov_len;
 
-    if (count > OPT_THRESHOLD) {
-      struct iovec iovec[IOV_MAX_CNT];
-      int iovcnt = 0;
+    LOG("[%s] base: %p, count: %zu\n", __func__, buf, count);
 
+    if (count > OPT_THRESHOLD) {
       uint64_t off = 0;
       uint64_t remaining_len = count;
 
@@ -480,7 +478,7 @@ ssize_t sendmsg(int sockfd, const struct msghdr *msg, int flags) {
             skiplist_search_buffer_fallin(&addr_list, (uint64_t)buf + off);
 
         if (entry) {
-          iovec[iovcnt].iov_base = entry->orig + (buf - entry->addr) + off;
+          iovec[iovcnt].iov_base = entry->orig + off;
           iovec[iovcnt].iov_len = entry->len;
         } else {
           iovec[iovcnt].iov_base = buf + off;
@@ -502,32 +500,27 @@ ssize_t sendmsg(int sockfd, const struct msghdr *msg, int flags) {
           abort();
         }
       }
-
-      struct msghdr mh;
-      libc_memcpy(&mh, msg, sizeof(struct msghdr));
-      mh.msg_iov = iovec;
-      mh.msg_iovlen = iovcnt;
-
-      ssize_t sent = libc_sendmsg(sockfd, &mh, flags);
-      if (sent < 0) {
-        perror("send error");
-        abort();
-      }
-      ret += sent;
     } else {
-      ssize_t sent = libc_send(sockfd, buf, count, flags);
-      if (sent < 0) {
-        perror("send error");
-        abort();
-      }
-      ret += sent;
+      iovec[iovcnt].iov_base = buf;
+      iovec[iovcnt].iov_len = count;
+      ++iovcnt;
     }
   }
+
+  for(i = 0; i < iovcnt; ++i) {
+    fprintf(stderr, "iovec[%d]: %p, %zu\n", i, iovec[i].iov_base, iovec[i].iov_len);
+  }
+  
+  struct msghdr mh;
+  libc_memcpy(&mh, msg, sizeof(struct msghdr));
+  mh.msg_iov = iovec;
+  mh.msg_iovlen = iovcnt;
 
 #if ENABLED_LOCK
   pthread_mutex_unlock(&mu);
 #endif
-  return ret;
+  
+  return libc_sendmsg(sockfd, &mh, flags);
 }
 
 ssize_t recvmsg(int sockfd, struct msghdr *msg, int flags) {
@@ -548,6 +541,9 @@ ssize_t recvmsg(int sockfd, struct msghdr *msg, int flags) {
         msg->msg_iov[i].iov_len - (left_fringe_len + right_fringe_len);
     if (msg->msg_iov[i].iov_len > OPT_THRESHOLD /*&&
         core_buffer_len > OPT_THRESHOLD*/) {
+
+      LOG("[%s] iov_base: %p, iov_len: %zu\n", __func__, msg->msg_iov[i].iov_base,
+	  msg->msg_iov[i].iov_len);
       snode new_entry;
       new_entry.lookup = msg->msg_iov[i].iov_base + left_fringe_len;
       new_entry.orig = (uint64_t)msg->msg_iov[i].iov_base;
@@ -604,51 +600,57 @@ void *print_stats() {
 }
 
 void handle_missing_fault(void *fault_addr) {
-  void *fault_page_start_addr = PAGE_ALIGN_DOWN(fault_addr);
-
   snode *fault_buffer_entry = skiplist_search_buffer_fallin(
-      &addr_list, (uint64_t)fault_page_start_addr);
+      &addr_list, (uint64_t)fault_addr);
   if (!fault_buffer_entry) {
-    LOG("[%s] no entry to handle fault\n", __func__);
+    fprintf(stderr, "[%s] no entry to handle fault addr: %p\n", __func__, fault_addr);
     skiplist_dump(&addr_list);
     abort();
   }
 
-  void *copy_dst = fault_page_start_addr;
+  void *copy_dst = fault_addr;
   void *copy_src =
       fault_buffer_entry->orig +
-      ((long long)fault_page_start_addr - (long long)fault_buffer_entry->addr);
+      ((long long)fault_addr - (long long)fault_buffer_entry->addr);
   size_t copy_len = PAGE_SIZE;
 
   if (fault_buffer_entry->addr + fault_buffer_entry->offset ==
-      fault_page_start_addr) {
+      fault_addr) {
     fault_buffer_entry->offset += PAGE_SIZE;
     fault_buffer_entry->len -= PAGE_SIZE;
 
-    if (fault_buffer_entry->len <= OPT_THRESHOLD) {
-      copy_dst =
-          fault_buffer_entry->addr + fault_buffer_entry->offset - PAGE_SIZE;
-      copy_src =
-          fault_buffer_entry->orig + fault_buffer_entry->offset - PAGE_SIZE;
-      copy_len = fault_buffer_entry->len + PAGE_SIZE;
+    struct snode first_buffer_entry;
+    first_buffer_entry.lookup = fault_buffer_entry->addr + fault_buffer_entry->offset;
+    first_buffer_entry.orig = fault_buffer_entry->orig;
+    first_buffer_entry.addr = fault_buffer_entry->addr;
+    first_buffer_entry.len = fault_buffer_entry->len;
+    first_buffer_entry.offset = fault_buffer_entry->offset;
 
-      skiplist_delete(&addr_list, fault_buffer_entry->lookup);
-    }
+    skiplist_delete(&addr_list, fault_buffer_entry->lookup);
+
+    if (first_buffer_entry.len <= OPT_THRESHOLD) {
+      copy_dst =
+          first_buffer_entry.addr + first_buffer_entry.offset - PAGE_SIZE;
+      copy_src =
+          first_buffer_entry.orig + first_buffer_entry.offset - PAGE_SIZE;
+      copy_len = first_buffer_entry.len + PAGE_SIZE;
+    } else
+      skiplist_insert_entry(&addr_list, &first_buffer_entry);
   } else if (fault_buffer_entry->addr + fault_buffer_entry->offset +
                  fault_buffer_entry->len ==
-             fault_page_start_addr + PAGE_SIZE) {
+             fault_addr + PAGE_SIZE) {
     fault_buffer_entry->len -= PAGE_SIZE;
 
     if (fault_buffer_entry->len <= OPT_THRESHOLD) {
       copy_dst = fault_buffer_entry->addr + fault_buffer_entry->offset;
       copy_src = fault_buffer_entry->orig + fault_buffer_entry->offset;
       copy_len = fault_buffer_entry->len + PAGE_SIZE;
-
+      
       skiplist_delete(&addr_list, fault_buffer_entry->lookup);
     }
   } else {
     uint64_t offset =
-        fault_page_start_addr + PAGE_SIZE - fault_buffer_entry->addr;
+        fault_addr + PAGE_SIZE - fault_buffer_entry->addr;
 
     snode second_tracked_buffer;
     second_tracked_buffer.lookup = fault_buffer_entry->addr + offset;
@@ -656,7 +658,7 @@ void handle_missing_fault(void *fault_addr) {
     second_tracked_buffer.addr = fault_buffer_entry->addr + offset;
     second_tracked_buffer.len =
         fault_buffer_entry->len -
-        (uint64_t)(fault_page_start_addr - fault_buffer_entry->addr -
+        (uint64_t)(fault_addr - fault_buffer_entry->addr -
                    fault_buffer_entry->offset) -
         PAGE_SIZE;
     second_tracked_buffer.offset = 0;
@@ -667,15 +669,14 @@ void handle_missing_fault(void *fault_addr) {
       copy_dst = fault_buffer_entry->addr + fault_buffer_entry->offset;
       copy_src = fault_buffer_entry->orig + fault_buffer_entry->offset;
       copy_len = fault_buffer_entry->len + PAGE_SIZE;
-
+      
       skiplist_delete(&addr_list, fault_buffer_entry->lookup);
     }
 
-    if (second_tracked_buffer.len <= OPT_THRESHOLD) {
+    if (second_tracked_buffer.len <= OPT_THRESHOLD)
       copy_len += second_tracked_buffer.len;
-    } else {
+    else 
       skiplist_insert_entry(&addr_list, &second_tracked_buffer);
-    }
   }
 
   LOG("[%s] copy from the original: %p-%p -> %p-%p, len: %lu\n", __func__,
@@ -687,12 +688,16 @@ void handle_missing_fault(void *fault_addr) {
       "shown\n",
       __func__);
 
+#if LOGON
+  snode_dump(fault_buffer_entry);
+#endif
+
   struct uffdio_range range;
-  range.start = fault_page_start_addr;
+  range.start = fault_addr;
   range.len = PAGE_SIZE;
 
   num_faults++;
-
+  
   if (ioctl(uffd, UFFDIO_WAKE, &range) < 0) {
     printf("[%s] range.start: %p, range.len: %lu\n", __func__, range.start,
            range.len);
