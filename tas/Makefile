@@ -5,7 +5,7 @@ SBINDIR ?= $(PREFIX)/sbin
 LIBDIR ?= $(PREFIX)/lib
 INCDIR ?= $(PREFIX)/include
 
-CFLAGS += -std=gnu99 -O3 -g -Wall -I. -Iinclude/ -march=native -fno-omit-frame-pointer -fno-common -mno-avx512f #-Werror
+CFLAGS += -std=gnu99 -O3 -g -w -I. -Iinclude/ -march=native -fno-omit-frame-pointer -fno-common -mno-avx512f #-Werror -Wall
 LDFLAGS += -pthread -g
 
 RTE_SDK ?= ${HOME}/dpdk/build
@@ -164,8 +164,9 @@ clean:
 	rm -f *.o tas/*.o tas/fast/*.o tas/slow/*.o lib/utils/*.o \
 	  lib/tas/*.o lib/sockets/*.o tests/*.o tests/*/*.o tools/*.o \
 	  lib/libtas_sockets.so lib/libtas_interpose.so \
-	  lib/libtas.so lib\copy_interpose.so lib\tas_copy_interpose.so \
-	  lib/page_fault_test.so lib/mem_counter.so \
+	  lib/libtas.so lib/copy_interpose.so lib/tas_copy_interpose.so \
+	  lib/page_fault_test.so lib/libmem_counter.so \
+		lib/zio_interpose.so \
 	  $(TESTS) \
 	  tools/tracetool tools/statetool tools/scaletool \
 	  tas/tas
