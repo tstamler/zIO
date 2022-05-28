@@ -110,8 +110,10 @@ int contain_(const char *s1, const char *s2, size_t s1_len, size_t s2_len) {
 #define ALWAYS_CHECK 0
 #define KEYWORD "nono"
 #define KEYWORD_LEN 4
-#define OPT_THRESHOLD 65535 // 0xfffffffffffffffff
-
+  //#define OPT_THRESHOLD 65535 // 0xfffffffffffffffff
+  //#define OPT_THRESHOLD 57343
+  #define OPT_THRESHOLD 1000000
+  
 #define OPT_THRESHOLD_1M 65535
 
 #define PAGE_MASK 0xfffffffff000
@@ -121,16 +123,29 @@ int contain_(const char *s1, const char *s2, size_t s1_len, size_t s2_len) {
     const int is_only_addr1 = (addr1 && !addr2);                               \
     const int is_only_addr2 = (!addr1 && addr2);                               \
     if (is_only_addr1) {                                                       \
-      fprintf(stdout, "%s len:%zu %p(%lu)\n", __func__, len, addr1,            \
+      fprintf(stdout, "%s len:%zu %p(%p)\n", __func__, len, addr1,            \
               (uint64_t)addr1 &PAGE_MASK);                                     \
     } else if (is_only_addr2) {                                                \
-      fprintf(stdout, "%s len:%zu %p(%lu)\n", __func__, len, addr2,            \
+      fprintf(stdout, "%s len:%zu %p(%p)\n", __func__, len, addr2,            \
               (uint64_t)addr2 &PAGE_MASK);                                     \
     } else {                                                                   \
-      fprintf(stdout, "%s len:%zu %p(%lu)->%p(%lu)\n", __func__, len, addr1,   \
+      fprintf(stdout, "%s len:%zu %p(%p)->%p(%p)\n", __func__, len, addr1,   \
               (uint64_t)addr1 &PAGE_MASK, addr2, (uint64_t)addr2 &PAGE_MASK);  \
     }                                                                          \
   } while (0)
+
+void print_trace(void) {
+  char **strings;
+  size_t i, size;
+  enum Constexpr { MAX_SIZE = 1024 };
+  void *array[MAX_SIZE];
+  size = backtrace(array, MAX_SIZE);
+  strings = backtrace_symbols(array, size);
+  for (i = 0; i < 15; i++)
+    printf("%s\n", strings[i]);
+  free(strings);
+}
+
 
 void *memcpy(void *dest, const void *src, size_t n) {
   ensure_init();
@@ -313,9 +328,7 @@ ssize_t recvmsg(int sockfd, struct msghdr *msg, int flags) {
 
   int i;
   for (i = 0; i < msg->msg_iovlen; i++) {
-    const char can_print = contain_(msg->msg_iov[i].iov_base, KEYWORD,
-                                    msg->msg_iov[i].iov_len, KEYWORD_LEN) ||
-                           msg->msg_iov[i].iov_len > OPT_THRESHOLD;
+    const char can_print = msg->msg_iov[i].iov_len > OPT_THRESHOLD;
     if (can_print) {
       print(msg->msg_iov[i].iov_base, 0, msg->msg_iov[i].iov_len);
     }

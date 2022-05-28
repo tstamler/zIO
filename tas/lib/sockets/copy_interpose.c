@@ -156,6 +156,32 @@
     }                                                                          \
   } while (0)
 
+#define copy_from_original2(orig_addr)                                          \
+  do {                                                                         \
+    LOG("[%s] the original buffer %p exists\n", __func__, orig_addr);          \
+    snode *entry = skiplist_front(&addr_list);                                 \
+    while (entry) {                                                            \
+      snode *entry_to_be_deleted = 0;                                          \
+      if (entry->orig != entry->addr &&                                        \
+          PAGE_ALIGN_DOWN(orig_addr) == PAGE_ALIGN_DOWN(entry->orig)) {        \
+        void *ret = mmap(                                                      \
+            entry->addr + entry->offset, entry->len, PROT_READ | PROT_WRITE,   \
+            MAP_PRIVATE | MAP_FIXED | MAP_ANONYMOUS | MAP_POPULATE, -1, 0);    \
+                                                                               \
+        LOG("[%s] copy from %p-%p to %p-%p, len: %lu\n", __func__,             \
+            entry->orig + entry->offset,                                       \
+            entry->orig + entry->offset + entry->len,                          \
+            entry->addr + entry->offset,                                       \
+            entry->addr + entry->offset + entry->len, entry->len);             \
+                                                                               \
+        entry_to_be_deleted = entry;                                           \
+      }                                                                        \
+      entry = snode_get_next(&addr_list, entry);                               \
+      if (entry_to_be_deleted)                                                 \
+        skiplist_delete(&addr_list, entry_to_be_deleted->lookup);              \
+    }                                                                          \
+  } while (0)
+
 #define IOV_MAX_CNT 10000
 
 long uffd = -1;
@@ -279,8 +305,8 @@ ssize_t pwrite(int sockfd, const void *buf, size_t count, off_t offset) {
 
 inline void *mmapcpy(void *dest, const void *src, size_t n) {
   void *ret =
-    mmap(dest, n, PROT_READ | PROT_WRITE,
-	 MAP_PRIVATE | MAP_FIXED | MAP_ANONYMOUS | MAP_POPULATE, -1, 0);
+      mmap(dest, n, PROT_READ | PROT_WRITE,
+           MAP_PRIVATE | MAP_FIXED | MAP_ANONYMOUS | MAP_POPULATE, -1, 0);
   libc_memcpy(dest, src, n);
 }
 
@@ -288,17 +314,21 @@ void handle_existing_buffer(uint64_t addr) {
   snode *exist = skiplist_search_buffer_fallin(&addr_list, addr);
   if (exist) {
     LOG("[%s] buffer exists %p\n", __func__, addr);
-    
+
     if (exist->orig == exist->addr) {
       // if this was the original, copy this to buffers tracking it
       copy_from_original(exist->addr);
     } else {
       LOG("[%s] the buffer is not original\n", __func__);
 
-      mmapcpy(exist->addr + exist->offset, exist->orig + exist->offset, exist->len);
+      mmapcpy(exist->addr + exist->offset, exist->orig + exist->offset,
+              exist->len);
+      // void *ret =
+      //   mmap(exist->addr + exist->offset, exist->len, PROT_READ | PROT_WRITE,
+      //       MAP_PRIVATE | MAP_FIXED | MAP_ANONYMOUS | MAP_POPULATE, -1, 0);
 
-      uint64_t next_buffer = exist->addr + exist->offset + exist->len;
-      handle_existing_buffer(next_buffer + PAGE_SIZE);
+      //uint64_t next_buffer = exist->addr + exist->offset + exist->len;
+      //handle_existing_buffer(next_buffer + PAGE_SIZE);
     }
 
     // TODO: we need to split the current tracking buffer by cases (see page
@@ -320,7 +350,7 @@ void *memcpy(void *dest, const void *src, size_t n) {
   }
 
 #if ENABLED_LOCK
-    pthread_mutex_lock(&mu);
+  pthread_mutex_lock(&mu);
 #endif
 
   LOG("[%s] copying %p-%p to %p-%p, size %zu\n", __func__, src, src + n, dest,
@@ -334,9 +364,8 @@ void *memcpy(void *dest, const void *src, size_t n) {
 
   /* snode *src_entry = */
   /*     skiplist_search(&addr_list, core_src_buffer_addr); */
-  
-  snode *src_entry =
-      skiplist_search(&addr_list, core_src_buffer_addr);
+
+  snode *src_entry = skiplist_search(&addr_list, core_src_buffer_addr);
   if (src_entry) {
 #if LOGON
     LOG("[%s] found src entry\n", __func__);
@@ -345,7 +374,7 @@ void *memcpy(void *dest, const void *src, size_t n) {
     if (src_entry->orig == src_entry->addr) {
       struct uffdio_register uffdio_register;
       uffdio_register.range.start =
-	(uint64_t)(src_entry->addr + src_entry->offset);
+          (uint64_t)(src_entry->addr + src_entry->offset);
       uffdio_register.range.len = (uint64_t)src_entry->len;
       uffdio_register.mode = UFFDIO_REGISTER_MODE_WP;
       uffdio_register.ioctls = 0;
@@ -358,13 +387,13 @@ void *memcpy(void *dest, const void *src, size_t n) {
         abort();
       }
     }
-    
+
     size_t left_fringe_len = LEFT_FRINGE_LEN(dest);
     size_t right_fringe_len = RIGHT_FRINGE_LEN(n, left_fringe_len);
 
     if (left_fringe_len == 0) {
       if (LEFT_FRINGE_LEN(src) > 0) {
-	left_fringe_len = PAGE_SIZE;
+        left_fringe_len = PAGE_SIZE;
       }
     }
 
@@ -372,7 +401,7 @@ void *memcpy(void *dest, const void *src, size_t n) {
 
     if (left_fringe_len > 0) {
       LOG("[%s] copy the left fringe %p-%p->%p-%p len: %zu\n", __func__, src,
-	  src + left_fringe_len, dest, dest + left_fringe_len, left_fringe_len);
+          src + left_fringe_len, dest, dest + left_fringe_len, left_fringe_len);
 
       libc_memcpy(dest, src, left_fringe_len);
     }
@@ -406,32 +435,33 @@ void *memcpy(void *dest, const void *src, size_t n) {
     }
 
     LOG("[%s] remaining_len %zu out of %zu\n", __func__, remaining_len, n);
-    
+
     // can be partial copy
     ++num_fast_copy;
-      
+
 #if ENABLED_LOCK
     pthread_mutex_unlock(&mu);
 #endif
 
-    if (remaining_len > 0) 
+    if (remaining_len > 0)
       memcpy(dest + (n - remaining_len), src + (n - remaining_len),
              remaining_len);
   } else {
     // can be partial copy
     ++num_slow_copy;
-    
+
 #if ENABLED_LOCK
     pthread_mutex_unlock(&mu);
 #endif
 
-    size_t copy_len = LEFT_FRINGE_LEN(dest) > 0 ? LEFT_FRINGE_LEN(dest) : PAGE_SIZE;
-    //size_t copy_len = PAGE_SIZE;
+    size_t copy_len =
+        LEFT_FRINGE_LEN(dest) > 0 ? LEFT_FRINGE_LEN(dest) : PAGE_SIZE;
+    // size_t copy_len = PAGE_SIZE;
     libc_memcpy(dest, src, copy_len);
     memcpy(dest + copy_len, src + copy_len, n - copy_len);
     /* libc_memcpy(dest, src, n); */
   }
-  
+
   return dest;
 }
 
@@ -451,14 +481,13 @@ void free(void *ptr) {
   return libc_free(ptr);
 }
 
-
 ssize_t sendmsg2(int sockfd, const struct msghdr *msg, int flags) {
   ensure_init();
 
 #if ENABLED_LOCK
   pthread_mutex_lock(&mu);
 #endif
-  
+
   struct iovec iovec[IOV_MAX_CNT];
   int iovcnt = 0;
 
@@ -478,7 +507,7 @@ ssize_t sendmsg2(int sockfd, const struct msghdr *msg, int flags) {
             skiplist_search_buffer_fallin(&addr_list, (uint64_t)buf + off);
 
         if (entry) {
-          iovec[iovcnt].iov_base = entry->orig + off;
+          iovec[iovcnt].iov_base = entry->orig + (buf - entry->addr) + off;
           iovec[iovcnt].iov_len = entry->len;
         } else {
           iovec[iovcnt].iov_base = buf + off;
@@ -507,10 +536,11 @@ ssize_t sendmsg2(int sockfd, const struct msghdr *msg, int flags) {
     }
   }
 
-  for(i = 0; i < iovcnt; ++i) {
-    fprintf(stderr, "iovec[%d]: %p, %zu\n", i, iovec[i].iov_base, iovec[i].iov_len);
+  for (i = 0; i < iovcnt; ++i) {
+    fprintf(stderr, "iovec[%d]: %p, %zu\n", i, iovec[i].iov_base,
+            iovec[i].iov_len);
   }
-  
+
   struct msghdr mh;
   libc_memcpy(&mh, msg, sizeof(struct msghdr));
   mh.msg_iov = iovec;
@@ -519,7 +549,7 @@ ssize_t sendmsg2(int sockfd, const struct msghdr *msg, int flags) {
 #if ENABLED_LOCK
   pthread_mutex_unlock(&mu);
 #endif
-  
+
   return libc_sendmsg(sockfd, &mh, flags);
 }
 
@@ -542,8 +572,8 @@ ssize_t recvmsg(int sockfd, struct msghdr *msg, int flags) {
     if (msg->msg_iov[i].iov_len > OPT_THRESHOLD /*&&
         core_buffer_len > OPT_THRESHOLD*/) {
 
-      LOG("[%s] iov_base: %p, iov_len: %zu\n", __func__, msg->msg_iov[i].iov_base,
-	  msg->msg_iov[i].iov_len);
+      LOG("[%s] iov_base: %p, iov_len: %zu\n", __func__,
+          msg->msg_iov[i].iov_base, msg->msg_iov[i].iov_len);
       snode new_entry;
       new_entry.lookup = msg->msg_iov[i].iov_base + left_fringe_len;
       new_entry.orig = (uint64_t)msg->msg_iov[i].iov_base;
@@ -600,10 +630,30 @@ void *print_stats() {
 }
 
 void handle_missing_fault(void *fault_addr) {
-  snode *fault_buffer_entry = skiplist_search_buffer_fallin(
-      &addr_list, (uint64_t)fault_addr);
+  // {
+  //   void *ret = mmap(fault_addr, PAGE_SIZE,
+  //       PROT_READ | PROT_WRITE,
+  //       MAP_PRIVATE | MAP_FIXED | MAP_ANONYMOUS | MAP_POPULATE, -1, 0);
+  //   struct uffdio_range range;
+  //   range.start = fault_addr;
+  //   range.len = PAGE_SIZE;
+
+  //   num_faults++;
+
+  //   if (ioctl(uffd, UFFDIO_WAKE, &range) < 0) {
+  //     printf("[%s] range.start: %p, range.len: %lu\n", __func__, range.start,
+  //         range.len);
+  //     perror("uffdio wake");
+  //     assert(0);
+  //   }
+  //   return;
+  // }
+
+  snode *fault_buffer_entry =
+      skiplist_search_buffer_fallin(&addr_list, (uint64_t)fault_addr);
   if (!fault_buffer_entry) {
-    fprintf(stderr, "[%s] no entry to handle fault addr: %p\n", __func__, fault_addr);
+    fprintf(stderr, "[%s] no entry to handle fault addr: %p\n", __func__,
+            fault_addr);
     skiplist_dump(&addr_list);
     abort();
   }
@@ -614,13 +664,13 @@ void handle_missing_fault(void *fault_addr) {
       ((long long)fault_addr - (long long)fault_buffer_entry->addr);
   size_t copy_len = PAGE_SIZE;
 
-  if (fault_buffer_entry->addr + fault_buffer_entry->offset ==
-      fault_addr) {
+  if (fault_buffer_entry->addr + fault_buffer_entry->offset == fault_addr) {
     fault_buffer_entry->offset += PAGE_SIZE;
     fault_buffer_entry->len -= PAGE_SIZE;
 
     struct snode first_buffer_entry;
-    first_buffer_entry.lookup = fault_buffer_entry->addr + fault_buffer_entry->offset;
+    first_buffer_entry.lookup =
+        fault_buffer_entry->addr + fault_buffer_entry->offset;
     first_buffer_entry.orig = fault_buffer_entry->orig;
     first_buffer_entry.addr = fault_buffer_entry->addr;
     first_buffer_entry.len = fault_buffer_entry->len;
@@ -645,12 +695,11 @@ void handle_missing_fault(void *fault_addr) {
       copy_dst = fault_buffer_entry->addr + fault_buffer_entry->offset;
       copy_src = fault_buffer_entry->orig + fault_buffer_entry->offset;
       copy_len = fault_buffer_entry->len + PAGE_SIZE;
-      
+
       skiplist_delete(&addr_list, fault_buffer_entry->lookup);
     }
   } else {
-    uint64_t offset =
-        fault_addr + PAGE_SIZE - fault_buffer_entry->addr;
+    uint64_t offset = fault_addr + PAGE_SIZE - fault_buffer_entry->addr;
 
     snode second_tracked_buffer;
     second_tracked_buffer.lookup = fault_buffer_entry->addr + offset;
@@ -669,13 +718,13 @@ void handle_missing_fault(void *fault_addr) {
       copy_dst = fault_buffer_entry->addr + fault_buffer_entry->offset;
       copy_src = fault_buffer_entry->orig + fault_buffer_entry->offset;
       copy_len = fault_buffer_entry->len + PAGE_SIZE;
-      
+
       skiplist_delete(&addr_list, fault_buffer_entry->lookup);
     }
 
     if (second_tracked_buffer.len <= OPT_THRESHOLD)
       copy_len += second_tracked_buffer.len;
-    else 
+    else
       skiplist_insert_entry(&addr_list, &second_tracked_buffer);
   }
 
@@ -697,7 +746,7 @@ void handle_missing_fault(void *fault_addr) {
   range.len = PAGE_SIZE;
 
   num_faults++;
-  
+
   if (ioctl(uffd, UFFDIO_WAKE, &range) < 0) {
     printf("[%s] range.start: %p, range.len: %lu\n", __func__, range.start,
            range.len);
