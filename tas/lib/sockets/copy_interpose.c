@@ -128,7 +128,6 @@
     }                                                                          \
   } while (0)
 
-
 #define IOV_MAX_CNT 10000
 
 long uffd = -1;
@@ -260,32 +259,31 @@ inline void *mmapcpy(void *dest, const void *src, size_t n) {
 }
 
 inline void copy_from_original(void *orig_addr) {
-  LOG("[%s] the original buffer %p exists\n", __func__, orig_addr);         
-  snode *entry = skiplist_front(&addr_list);                                
-  snode *entry_to_be_original = 0;                                        
-  while (entry) {                                                           
-    if (entry->orig != entry->addr &&                                       
-        PAGE_ALIGN_DOWN(orig_addr) == PAGE_ALIGN_DOWN(entry->orig)) {       
+  LOG("[%s] the original buffer %p exists\n", __func__, orig_addr);
+  snode *entry = skiplist_front(&addr_list);
+  snode *entry_to_be_original = 0;
+  while (entry) {
+    if (entry->orig != entry->addr &&
+        PAGE_ALIGN_DOWN(orig_addr) == PAGE_ALIGN_DOWN(entry->orig)) {
       if (entry_to_be_original) {
         entry->orig = entry_to_be_original->addr;
-      } else { 
-        mmapcpy(entry->addr + entry->offset, 
-            entry->orig + entry->offset,
-            entry->len);
+      } else {
+        mmapcpy(entry->addr + entry->offset, entry->orig + entry->offset,
+                entry->len);
 
-        LOG("[%s] copy from %p-%p to %p-%p, len: %lu\n", __func__,            
-            entry->orig + entry->offset,                                      
-            entry->orig + entry->offset + entry->len,                         
-            entry->addr + entry->offset,                                      
-            entry->addr + entry->offset + entry->len, entry->len);            
+        LOG("[%s] copy from %p-%p to %p-%p, len: %lu\n", __func__,
+            entry->orig + entry->offset,
+            entry->orig + entry->offset + entry->len,
+            entry->addr + entry->offset,
+            entry->addr + entry->offset + entry->len, entry->len);
 
         entry->orig = entry->addr;
 
-        entry_to_be_original = entry;                                          
+        entry_to_be_original = entry;
       }
-    }                                                                       
-    entry = snode_get_next(&addr_list, entry);                              
-  }                                                                         
+    }
+    entry = snode_get_next(&addr_list, entry);
+  }
 }
 
 void handle_existing_buffer(uint64_t addr) {
@@ -299,15 +297,15 @@ void handle_existing_buffer(uint64_t addr) {
     } else {
       LOG("[%s] the buffer is not original\n", __func__);
 
-      //UNREGISTER_FAULT(exist->addr + exist->offset, exist->len);
+      // UNREGISTER_FAULT(exist->addr + exist->offset, exist->len);
       mmapcpy(exist->addr + exist->offset, exist->orig + exist->offset,
               exist->len);
       // void *ret =
       //   mmap(exist->addr + exist->offset, exist->len, PROT_READ | PROT_WRITE,
       //       MAP_PRIVATE | MAP_FIXED | MAP_ANONYMOUS | MAP_POPULATE, -1, 0);
 
-      //uint64_t next_buffer = exist->addr + exist->offset + exist->len;
-      //handle_existing_buffer(next_buffer + PAGE_SIZE);
+      // uint64_t next_buffer = exist->addr + exist->offset + exist->len;
+      // handle_existing_buffer(next_buffer + PAGE_SIZE);
     }
 
     // TODO: we need to split the current tracking buffer by cases (see page
@@ -389,7 +387,6 @@ void *memcpy(void *dest, const void *src, size_t n) {
     dest_entry.len =
         MIN(src_entry->len, n - (left_fringe_len + right_fringe_len));
     dest_entry.offset = left_fringe_len;
-
 
     snode *exist = skiplist_search_buffer_fallin(&addr_list, dest_entry.lookup);
     if (exist) {
@@ -524,19 +521,18 @@ ssize_t sendmsg(int sockfd, const struct msghdr *msg, int flags) {
     }
 
 #if LOGON
-  {
-    int i;
-    int total_len = 0;
-    for (i = 0; i < iovcnt; i++) {
-      printf("iov[%d]: base %p len %lu\n", i, iovec[i].iov_base,
-             iovec[i].iov_len);
-      total_len += iovec[i].iov_len;
+    {
+      int i;
+      int total_len = 0;
+      for (i = 0; i < iovcnt; i++) {
+        printf("iov[%d]: base %p len %lu\n", i, iovec[i].iov_base,
+               iovec[i].iov_len);
+        total_len += iovec[i].iov_len;
+      }
+
+      printf("total: %d, count: %d\n", total_len, count);
     }
-
-    printf("total: %d, count: %d\n", total_len, count);
-  }
 #endif
-
   }
 
   struct msghdr mh;
@@ -578,7 +574,7 @@ ssize_t recvmsg(int sockfd, struct msghdr *msg, int flags) {
       new_entry.len = core_buffer_len;
       new_entry.offset = left_fringe_len;
 
-      //handle_existing_buffer(new_entry.lookup);
+      // handle_existing_buffer(new_entry.lookup);
       skiplist_insert_entry(&addr_list, &new_entry);
     }
   }
