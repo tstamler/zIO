@@ -51,7 +51,6 @@
 #include <utils.h>
 
 //#define OPT_THRESHOLD 0xfffffffffffffffff
-//#define OPT_THRESHOLD 991808
 #define OPT_THRESHOLD 983040
 //#define OPT_THRESHOLD 57343
 
@@ -203,8 +202,8 @@ ssize_t pwrite(int sockfd, const void *buf, size_t count, off_t offset) {
       iovec[iovcnt].iov_base = entry->orig + (buf - entry->addr) + off;
       iovec[iovcnt].iov_len = entry->len;
 
-      UNREGISTER_FAULT(entry->addr + entry->offset, entry->len);
-      skiplist_delete(&addr_list, entry->lookup);
+      //UNREGISTER_FAULT(entry->addr + entry->offset, entry->len);
+      //skiplist_delete(&addr_list, entry->lookup);
     } else {
       iovec[iovcnt].iov_base = buf + off;
       iovec[iovcnt].iov_len = LEFT_FRINGE_LEN(iovec[iovcnt].iov_base) == 0
@@ -370,13 +369,6 @@ void *memcpy(void *dest, const void *src, size_t n) {
       }
     }
 
-    if (left_fringe_len > 0) {
-      LOG("[%s] copy the left fringe %p-%p->%p-%p len: %zu\n", __func__, src,
-          src + left_fringe_len, dest, dest + left_fringe_len, left_fringe_len);
-
-      libc_memcpy(dest, src, left_fringe_len);
-    }
-
     uint64_t core_dst_buffer_addr = dest + left_fringe_len;
 
     snode dest_entry;
@@ -392,6 +384,13 @@ void *memcpy(void *dest, const void *src, size_t n) {
     if (exist) {
       UNREGISTER_FAULT(exist->addr + exist->offset, exist->len);
       skiplist_delete(&addr_list, exist->lookup);
+    }
+
+    if (left_fringe_len > 0) {
+      LOG("[%s] copy the left fringe %p-%p->%p-%p len: %zu\n", __func__, src,
+          src + left_fringe_len, dest, dest + left_fringe_len, left_fringe_len);
+
+      libc_memcpy(dest, src, left_fringe_len);
     }
 
     size_t remaining_len = n - left_fringe_len;
@@ -492,8 +491,8 @@ ssize_t sendmsg(int sockfd, const struct msghdr *msg, int flags) {
           iovec[iovcnt].iov_base = entry->orig + (buf - entry->addr) + off;
           iovec[iovcnt].iov_len = entry->len;
 
-          UNREGISTER_FAULT(entry->addr + entry->offset, entry->len);
-          skiplist_delete(&addr_list, entry->lookup);
+          //UNREGISTER_FAULT(entry->addr + entry->offset, entry->len);
+          //skiplist_delete(&addr_list, entry->lookup);
         } else {
           iovec[iovcnt].iov_base = buf + off;
           iovec[iovcnt].iov_len = LEFT_FRINGE_LEN(iovec[iovcnt].iov_base) == 0
@@ -586,6 +585,10 @@ ssize_t recvmsg(int sockfd, struct msghdr *msg, int flags) {
 }
 
 void *memset(void *dest, int val, size_t len) {
+#if ENABLED_LOCK
+  pthread_mutex_lock(&mu);
+#endif
+
   unsigned char *ptr = dest + LEFT_FRINGE_LEN(dest);
   ssize_t remaining_len = len;
 
@@ -610,6 +613,10 @@ void *memset(void *dest, int val, size_t len) {
   ptr = dest;
   while (len-- > 0)
     *ptr++ = val;
+
+#if ENABLED_LOCK
+  pthread_mutex_unlock(&mu);
+#endif
   return dest;
 }
 
