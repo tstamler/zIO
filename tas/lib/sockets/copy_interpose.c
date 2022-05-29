@@ -62,7 +62,7 @@
 
 #define UFFD_PROTO
 
-#define ENABLED_LOCK 1
+#define ENABLED_LOCK 0
 
 #define LOGON 0
 #if LOGON
