@@ -156,32 +156,6 @@
     }                                                                          \
   } while (0)
 
-#define copy_from_original2(orig_addr)                                          \
-  do {                                                                         \
-    LOG("[%s] the original buffer %p exists\n", __func__, orig_addr);          \
-    snode *entry = skiplist_front(&addr_list);                                 \
-    while (entry) {                                                            \
-      snode *entry_to_be_deleted = 0;                                          \
-      if (entry->orig != entry->addr &&                                        \
-          PAGE_ALIGN_DOWN(orig_addr) == PAGE_ALIGN_DOWN(entry->orig)) {        \
-        void *ret = mmap(                                                      \
-            entry->addr + entry->offset, entry->len, PROT_READ | PROT_WRITE,   \
-            MAP_PRIVATE | MAP_FIXED | MAP_ANONYMOUS | MAP_POPULATE, -1, 0);    \
-                                                                               \
-        LOG("[%s] copy from %p-%p to %p-%p, len: %lu\n", __func__,             \
-            entry->orig + entry->offset,                                       \
-            entry->orig + entry->offset + entry->len,                          \
-            entry->addr + entry->offset,                                       \
-            entry->addr + entry->offset + entry->len, entry->len);             \
-                                                                               \
-        entry_to_be_deleted = entry;                                           \
-      }                                                                        \
-      entry = snode_get_next(&addr_list, entry);                               \
-      if (entry_to_be_deleted)                                                 \
-        skiplist_delete(&addr_list, entry_to_be_deleted->lookup);              \
-    }                                                                          \
-  } while (0)
-
 #define IOV_MAX_CNT 10000
 
 long uffd = -1;
@@ -203,7 +177,6 @@ static ssize_t (*libc_pwrite)(int fd, const void *buf, size_t count,
                               off_t offset) = NULL;
 static ssize_t (*libc_pwritev)(int sockfd, const struct iovec *iov, int iovcnt,
                                off_t offset) = NULL;
-static void *(*libc_realloc)(void *ptr, size_t new_size);
 static void (*libc_free)(void *ptr);
 static ssize_t (*libc_send)(int sockfd, const void *buf, size_t count,
                             int flags);
@@ -327,8 +300,8 @@ void handle_existing_buffer(uint64_t addr) {
       //   mmap(exist->addr + exist->offset, exist->len, PROT_READ | PROT_WRITE,
       //       MAP_PRIVATE | MAP_FIXED | MAP_ANONYMOUS | MAP_POPULATE, -1, 0);
 
-      //uint64_t next_buffer = exist->addr + exist->offset + exist->len;
-      //handle_existing_buffer(next_buffer + PAGE_SIZE);
+      // uint64_t next_buffer = exist->addr + exist->offset + exist->len;
+      // handle_existing_buffer(next_buffer + PAGE_SIZE);
     }
 
     // TODO: we need to split the current tracking buffer by cases (see page
@@ -358,7 +331,7 @@ void *memcpy(void *dest, const void *src, size_t n) {
 
   uint64_t core_dst_buffer_addr = dest + LEFT_FRINGE_LEN(dest);
 
-  handle_existing_buffer(core_dst_buffer_addr);
+  // handle_existing_buffer(core_dst_buffer_addr);
 
   const uint64_t core_src_buffer_addr = src + LEFT_FRINGE_LEN(src);
 
@@ -466,18 +439,19 @@ void *memcpy(void *dest, const void *src, size_t n) {
 }
 
 void free(void *ptr) {
-  // uint64_t ptr_bounded = (uint64_t)ptr & PAGE_MASK;
-  // snode *entry = skiplist_search(&addr_list, ptr_bounded);
+  /*
+  snode *entry = skiplist_front(&addr_list);
+  while (entry) {
+    if (entry->addr == ptr) {
+      UNREGISTER_FAULT(entry->addr + entry->offset, entry->len);
+      skiplist_delete(&addr_list, entry->lookup);
+      break;
+    }
 
-  // if (entry) {
-  //   if (entry->orig == ptr) {
-  //     // mark for later free
-  //     entry->free = 1;
-  //     return;
-  //   } else {
-  //     skiplist_delete(&addr_list, ptr_bounded);
-  //   }
-  // }
+    entry = snode_get_next(&addr_list, entry);
+  }
+  */
+  // UNREGISTER_FAULT(ptr + LEFT_FRINGE_LEN(ptr), OPT_THRESHOLD);
   return libc_free(ptr);
 }
 
@@ -581,21 +555,9 @@ ssize_t recvmsg(int sockfd, struct msghdr *msg, int flags) {
       new_entry.len = core_buffer_len;
       new_entry.offset = left_fringe_len;
 
-      handle_existing_buffer(new_entry.lookup);
+      // handle_existing_buffer(new_entry.lookup);
 
-      snode *prev = skiplist_search_buffer_fallin(
-          &addr_list, PAGE_ALIGN_DOWN(new_entry.addr) - 1);
-
-      if (0 && prev &&
-          prev->addr + prev->offset + prev->len + PAGE_SIZE ==
-              new_entry.addr + new_entry.offset) {
-        LOG("[%s] %p will be merged to %p-%p, %lu\n", __func__, new_entry.addr,
-            prev->addr, prev->addr + prev->len, prev->len);
-
-        prev->len += new_entry.len + (new_entry.offset == 0 ? 0 : PAGE_SIZE);
-      } else {
-        skiplist_insert_entry(&addr_list, &new_entry);
-      }
+      skiplist_insert_entry(&addr_list, &new_entry);
     }
   }
 
@@ -603,6 +565,37 @@ ssize_t recvmsg(int sockfd, struct msghdr *msg, int flags) {
   pthread_mutex_unlock(&mu);
 #endif
   return ret;
+}
+
+void *memset(void *dest, int val, size_t len) {
+  unsigned char *ptr = dest + LEFT_FRINGE_LEN(dest);
+  ssize_t remaining_len = len;
+
+  if (addr_list.header && len > OPT_THRESHOLD) {
+    while (remaining_len > OPT_THRESHOLD) {
+      snode *entry = skiplist_search(&addr_list, ptr);
+      if (entry) {
+        void *ret = mmap(
+            entry->addr + entry->offset, entry->len, PROT_READ | PROT_WRITE,
+            MAP_PRIVATE | MAP_FIXED | MAP_ANONYMOUS | MAP_POPULATE, -1, 0);
+        skiplist_delete(&addr_list, entry->lookup);
+
+        remaining_len -= entry->len;
+        ptr += entry->len;
+      } else {
+        void *ret =
+            mmap(ptr, PAGE_SIZE, PROT_READ | PROT_WRITE,
+                 MAP_PRIVATE | MAP_FIXED | MAP_ANONYMOUS | MAP_POPULATE, -1, 0);
+        remaining_len -= PAGE_SIZE;
+        ptr += PAGE_SIZE;
+      }
+    }
+  }
+
+  ptr = dest;
+  while (len-- > 0)
+    *ptr++ = val;
+  return dest;
 }
 
 /******************************************************************************/
@@ -880,7 +873,6 @@ static void init(void) {
   libc_pwritev = bind_symbol("pwritev");
   libc_memcpy = bind_symbol("memcpy");
   libc_memmove = bind_symbol("memmove");
-  libc_realloc = bind_symbol("realloc");
   libc_free = bind_symbol("free");
   libc_send = bind_symbol("send");
   libc_sendmsg = bind_symbol("sendmsg");
