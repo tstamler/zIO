@@ -51,8 +51,8 @@
 #include <utils.h>
 
 //#define OPT_THRESHOLD 0xfffffffffffffffff
-#define OPT_THRESHOLD 983040
-//#define OPT_THRESHOLD 978944
+#define OPT_THRESHOLD 1032192
+//#define OPT_THRESHOLD 983040
 //#define OPT_THRESHOLD 57343
 
 #define PAGE_SIZE sysconf(_SC_PAGE_SIZE)
@@ -62,7 +62,7 @@
 
 #define UFFD_PROTO
 
-#define ENABLED_LOCK 1
+#define ENABLED_LOCK 0
 
 #define LOGON 0
 #if LOGON
@@ -201,9 +201,6 @@ ssize_t pwrite(int sockfd, const void *buf, size_t count, off_t offset) {
     if (entry) {
       iovec[iovcnt].iov_base = entry->orig + (buf - entry->addr) + off;
       iovec[iovcnt].iov_len = entry->len;
-
-      // UNREGISTER_FAULT(entry->addr + entry->offset, entry->len);
-      // skiplist_delete(&addr_list, entry->lookup);
     } else {
       iovec[iovcnt].iov_base = buf + off;
       iovec[iovcnt].iov_len = LEFT_FRINGE_LEN(iovec[iovcnt].iov_base) == 0
@@ -252,7 +249,7 @@ inline void *mmapcpy(void *dest, const void *src, size_t n) {
   void *ret =
       mmap(dest, n, PROT_READ | PROT_WRITE,
            MAP_PRIVATE | MAP_FIXED | MAP_ANONYMOUS | MAP_POPULATE, -1, 0);
-  libc_memmove(dest, src, n);
+  libc_memcpy(dest, src, n);
 }
 
 inline void copy_from_original(void *orig_addr) {
@@ -290,7 +287,7 @@ void *memcpy(void *dest, const void *src, size_t n) {
 
   if (cannot_optimize) {
     dest_in_processing = 0;
-    return libc_memmove(dest, src, n);
+    return libc_memcpy(dest, src, n);
   }
 
   LOG("[%s] copying %p-%p to %p-%p, size %zu\n", __func__, src, src + n, dest,
@@ -354,7 +351,7 @@ void *memcpy(void *dest, const void *src, size_t n) {
       LOG("[%s] copy the left fringe %p-%p->%p-%p len: %zu\n", __func__, src,
           src + left_fringe_len, dest, dest + left_fringe_len, left_fringe_len);
 
-      libc_memmove(dest, src, left_fringe_len);
+      libc_memcpy(dest, src, left_fringe_len);
     }
 
     size_t remaining_len = n - left_fringe_len;
@@ -415,7 +412,7 @@ void *memcpy(void *dest, const void *src, size_t n) {
     size_t copy_len =
         LEFT_FRINGE_LEN(dest) > 0 ? LEFT_FRINGE_LEN(dest) : PAGE_SIZE;
     // size_t copy_len = PAGE_SIZE;
-    libc_memmove(dest, src, copy_len);
+    libc_memcpy(dest, src, copy_len);
     memcpy(dest + copy_len, src + copy_len, n - copy_len);
   }
 
@@ -513,7 +510,7 @@ ssize_t sendmsg(int sockfd, const struct msghdr *msg, int flags) {
   }
 
   struct msghdr mh;
-  memmove(&mh, msg, sizeof(struct msghdr));
+  libc_memcpy(&mh, msg, sizeof(struct msghdr));
   mh.msg_iov = iovec;
   mh.msg_iovlen = iovcnt;
 
@@ -626,15 +623,15 @@ void handle_missing_fault(void *fault_addr) {
   snode *fault_buffer_entry =
       skiplist_search_buffer_fallin(&addr_list, (uint64_t)fault_addr);
   if (!fault_buffer_entry) {
-    /*
     fprintf(stderr, "[%s] no entry to handle fault addr: %p\n", __func__,
             fault_addr);
     skiplist_dump(&addr_list);
     abort();
-    */
+    /*
     void *ret =
         mmap(fault_addr, PAGE_SIZE, PROT_READ | PROT_WRITE,
              MAP_PRIVATE | MAP_FIXED | MAP_ANONYMOUS | MAP_POPULATE, -1, 0);
+    */
   } else {
 
     void *copy_dst = fault_addr;
@@ -870,33 +867,11 @@ void NewHook(const void *ptr, size_t size) {
   if (size > OPT_THRESHOLD) {
     snode entry;
     entry.lookup = (uint64_t)ptr;
+    entry.addr = 0;
     entry.len = size;
-    skiplist_insert_entry(&alloc_list, &entry);
-
-    /*
-    LOG("[%s] ptr: %p len: %zu malloced\n",
-        __func__, ptr, size);
-    void *p = ptr + LEFT_FRINGE_LEN(ptr);
-    ssize_t remaining_len = size;
-    while (remaining_len > OPT_THRESHOLD) {
-      snode *exist = skiplist_search(&addr_list, p);
-      if (exist) {
-        if (exist->addr == exist->orig) { // original
-          //copy_from_original(exist->orig);
-        } else {
-          UNREGISTER_FAULT(exist->addr + exist->offset, exist->len);
-        }
-
-        p += exist->len;
-        remaining_len -= exist->len;
-
-        skiplist_delete(&addr_list, exist->lookup);
-      } else {
-        p += PAGE_SIZE;
-        remaining_len -= PAGE_SIZE;
-      }
-    }
-    */
+    int ret = skiplist_insert_entry(&alloc_list, &entry);
+    if (ret == 1)
+      abort();
   }
 }
 
@@ -908,10 +883,14 @@ void DeleteHook(const void *ptr) {
 #if ENABLED_LOCK
     pthread_mutex_lock(&mu);
 #endif
+    LOG("[%s] ptr: %p\n", __func__, ptr);
     while (remaining_len > OPT_THRESHOLD) {
       snode *exist = skiplist_search(&addr_list, p);
       if (exist) {
-        LOG("[%s] ptr: %p\n", __func__, ptr);
+        LOG("[%s] exist: \n", __func__);
+#if LOGON
+        snode_dump(exist);
+#endif
         if (exist->addr == exist->orig) {
           copy_from_original(exist->orig);
         } else {
@@ -929,7 +908,7 @@ void DeleteHook(const void *ptr) {
 #if ENABLED_LOCK
     pthread_mutex_unlock(&mu);
 #endif
-    skiplist_delete(&alloc_list, alloc_entry);
+    skiplist_delete(&alloc_list, alloc_entry->lookup);
   }
 }
 
