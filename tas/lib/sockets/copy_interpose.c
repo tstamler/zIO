@@ -252,7 +252,7 @@ inline void *mmapcpy(void *dest, const void *src, size_t n) {
   void *ret =
       mmap(dest, n, PROT_READ | PROT_WRITE,
            MAP_PRIVATE | MAP_FIXED | MAP_ANONYMOUS | MAP_POPULATE, -1, 0);
-  libc_memcpy(dest, src, n);
+  libc_memmove(dest, src, n);
 }
 
 inline void copy_from_original(void *orig_addr) {
@@ -290,7 +290,7 @@ void *memcpy(void *dest, const void *src, size_t n) {
 
   if (cannot_optimize) {
     dest_in_processing = 0;
-    return libc_memcpy(dest, src, n);
+    return libc_memmove(dest, src, n);
   }
 
   LOG("[%s] copying %p-%p to %p-%p, size %zu\n", __func__, src, src + n, dest,
@@ -354,7 +354,7 @@ void *memcpy(void *dest, const void *src, size_t n) {
       LOG("[%s] copy the left fringe %p-%p->%p-%p len: %zu\n", __func__, src,
           src + left_fringe_len, dest, dest + left_fringe_len, left_fringe_len);
 
-      libc_memcpy(dest, src, left_fringe_len);
+      libc_memmove(dest, src, left_fringe_len);
     }
 
     size_t remaining_len = n - left_fringe_len;
@@ -376,17 +376,18 @@ void *memcpy(void *dest, const void *src, size_t n) {
         snode_dump(&dest_entry);
 #endif
 
-      } /*else {
-        libc_memcpy(dest_entry.addr + dest_entry.offset,
-            dest_entry.orig + dest_entry.offset,
-            dest_entry.len);
-        LOG("[%s] copy buffer %p-%p -> %p-%p len:%lu\n", __func__,
-            dest_entry.orig + dest_entry.offset,
-            dest_entry.orig + dest_entry.offset + dest_entry.len,
-            dest_entry.addr + dest_entry.offset,
-            dest_entry.addr + dest_entry.offset + dest_entry.len,
-      dest_entry.len);
-      }*/
+      } else {
+        if (dest_entry.addr != dest_entry.orig) {
+          libc_memmove(dest_entry.addr + dest_entry.offset,
+                       dest_entry.orig + dest_entry.offset, dest_entry.len);
+          LOG("[%s] copy buffer %p-%p -> %p-%p len:%lu\n", __func__,
+              dest_entry.orig + dest_entry.offset,
+              dest_entry.orig + dest_entry.offset + dest_entry.len,
+              dest_entry.addr + dest_entry.offset,
+              dest_entry.addr + dest_entry.offset + dest_entry.len,
+              dest_entry.len);
+        }
+      }
 
       remaining_len -= dest_entry.len;
     }
@@ -414,9 +415,8 @@ void *memcpy(void *dest, const void *src, size_t n) {
     size_t copy_len =
         LEFT_FRINGE_LEN(dest) > 0 ? LEFT_FRINGE_LEN(dest) : PAGE_SIZE;
     // size_t copy_len = PAGE_SIZE;
-    libc_memcpy(dest, src, copy_len);
+    libc_memmove(dest, src, copy_len);
     memcpy(dest + copy_len, src + copy_len, n - copy_len);
-    /* libc_memcpy(dest, src, n); */
   }
 
   return dest;
@@ -513,7 +513,7 @@ ssize_t sendmsg(int sockfd, const struct msghdr *msg, int flags) {
   }
 
   struct msghdr mh;
-  libc_memcpy(&mh, msg, sizeof(struct msghdr));
+  memmove(&mh, msg, sizeof(struct msghdr));
   mh.msg_iov = iovec;
   mh.msg_iovlen = iovcnt;
 
