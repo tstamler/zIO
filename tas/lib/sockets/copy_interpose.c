@@ -570,7 +570,7 @@ ssize_t recvmsg(int sockfd, struct msghdr *msg, int flags) {
 void *memset(void *dest, int val, size_t len) {
   unsigned char *ptr = dest + LEFT_FRINGE_LEN(dest);
 
-  if (addr_list.header && len > OPT_THRESHOLD) {
+  if (addr_list.header) {
     ssize_t remaining_len = len;
 
 #if ENABLED_LOCK
@@ -589,8 +589,6 @@ void *memset(void *dest, int val, size_t len) {
 
         remaining_len -= entry->len;
         ptr += entry->len;
-
-        skiplist_delete(&addr_list, entry->lookup);
       } else {
         remaining_len -= PAGE_SIZE;
         ptr += PAGE_SIZE;
@@ -874,10 +872,15 @@ void *handle_fault() {
   }
 }
 
+
+/* For tcmalloc */
+
 skiplist alloc_list;
 
 void NewHook(const void *ptr, size_t size) {
   if (size > OPT_THRESHOLD) {
+    LOG("[malloc] ptr: %p, size: %zu\n", ptr, size);
+
     snode entry;
     entry.lookup = (uint64_t)ptr;
     entry.addr = 0;
@@ -891,6 +894,8 @@ void NewHook(const void *ptr, size_t size) {
 void DeleteHook(const void *ptr) {
   snode *alloc_entry = skiplist_search(&alloc_list, ptr);
   if (alloc_entry) {
+    LOG("[free] ptr: %p\n", ptr);
+
     ssize_t remaining_len = alloc_entry->len;
     void *p = ptr + LEFT_FRINGE_LEN(ptr);
 #if ENABLED_LOCK

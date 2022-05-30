@@ -5,7 +5,7 @@ SBINDIR ?= $(PREFIX)/sbin
 LIBDIR ?= $(PREFIX)/lib
 INCDIR ?= $(PREFIX)/include
 
-CFLAGS += -std=gnu99 -O3 -g -w -I. -Iinclude/ -march=native -fno-omit-frame-pointer -fno-common -mno-avx512f #-Werror -Wall
+CFLAGS += -std=gnu99 -O3 -g -w -I. -Iinclude/ -march=native -fno-omit-frame-pointer -fno-common -mno-avx512f -fno-builtin #-Werror -Wall
 LDFLAGS += -pthread -g
 
 RTE_SDK ?= ${HOME}/dpdk/build

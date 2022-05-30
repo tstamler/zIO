@@ -60,9 +60,11 @@ static inline int skiplist_insert_with_addr(skiplist *list, uint64_t lookup,
     update[i] = x;
   }
 
-    if (x && x->addr + x->offset + x->len >= addr) {
+  /*
+    if (x && x->addr > 0 && x->addr + x->offset + x->len >= addr) {
       return 1;
     }
+    */
 
   x = x->forward[1];
 
@@ -73,7 +75,6 @@ static inline int skiplist_insert_with_addr(skiplist *list, uint64_t lookup,
     x->addr = addr;
     return 0;
   } else {
-
     level = rand_level();
     if (level > list->level) {
       for (i = list->level + 1; i <= level; i++) {
@@ -123,7 +124,6 @@ static inline snode *skiplist_search(skiplist *list, uint64_t lookup) {
   return NULL;
 }
 
-// XXX: naming sucks
 static inline snode *skiplist_search_buffer_fallin(skiplist *list,
                                                    uint64_t addr) {
   snode *x = list->header;
