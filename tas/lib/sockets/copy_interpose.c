@@ -194,7 +194,7 @@ ssize_t pwrite(int sockfd, const void *buf, size_t count, off_t offset) {
 #if ENABLED_LOCK
   pthread_mutex_lock(&mu);
 #endif
-  while (remaining_len > 0) {
+  while (remaining_len > OPT_THRESHOLD) {
     snode *entry =
         skiplist_search_buffer_fallin(&addr_list, (uint64_t)buf + off);
 
@@ -220,6 +220,12 @@ ssize_t pwrite(int sockfd, const void *buf, size_t count, off_t offset) {
       perror("pwrite iov is full");
       abort();
     }
+  }
+
+  if (remaining_len > 0) {
+    iovec[iovcnt].iov_base = buf + off;
+    iovec[iovcnt].iov_len = remaining_len;
+    ++iovcnt;
   }
 
   num_fast_writes++;
@@ -458,7 +464,7 @@ ssize_t sendmsg(int sockfd, const struct msghdr *msg, int flags) {
       uint64_t off = 0;
       uint64_t remaining_len = count;
 
-      while (remaining_len > 0) {
+      while (remaining_len > OPT_THRESHOLD) {
         snode *entry =
             skiplist_search_buffer_fallin(&addr_list, (uint64_t)buf + off);
 
@@ -484,6 +490,12 @@ ssize_t sendmsg(int sockfd, const struct msghdr *msg, int flags) {
           perror("iov is full");
           abort();
         }
+      }
+
+      if (remaining_len > 0) {
+        iovec[iovcnt].iov_base = buf + off;
+        iovec[iovcnt].iov_len = remaining_len;
+        ++iovcnt;
       }
 
 #if ENABLED_LOCK
