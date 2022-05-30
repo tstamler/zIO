@@ -586,10 +586,11 @@ void *memset(void *dest, int val, size_t len) {
               entry->addr + entry->offset, entry->len, PROT_READ | PROT_WRITE,
               MAP_PRIVATE | MAP_FIXED | MAP_ANONYMOUS | MAP_POPULATE, -1, 0);
         }
-        skiplist_delete(&addr_list, entry->lookup);
 
         remaining_len -= entry->len;
         ptr += entry->len;
+
+        skiplist_delete(&addr_list, entry->lookup);
       } else {
         remaining_len -= PAGE_SIZE;
         ptr += PAGE_SIZE;
@@ -908,10 +909,11 @@ void DeleteHook(const void *ptr) {
         } else {
           UNREGISTER_FAULT(exist->addr + exist->offset, exist->len);
         }
-        skiplist_delete(&addr_list, exist->lookup);
 
         p += exist->len;
         remaining_len -= exist->len;
+
+        skiplist_delete(&addr_list, exist->lookup);
       } else {
         p += PAGE_SIZE;
         remaining_len -= PAGE_SIZE;
