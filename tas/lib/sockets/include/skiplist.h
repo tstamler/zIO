@@ -60,13 +60,9 @@ static inline int skiplist_insert_with_addr(skiplist *list, uint64_t lookup,
     update[i] = x;
   }
 
-  // snode *prev = x->forward[1];
-  // if (prev->addr + prev->offset + prev->len + getpagesize() >= addr) {
-  //   // If a new buffer is consecutive with the existing one
-  //   // merge to the previous node
-  //   prev->len += len + getpagesize();
-  //   return 0;
-  // }
+    if (x && x->addr + x->offset + x->len >= addr) {
+      return 1;
+    }
 
   x = x->forward[1];
 
@@ -77,6 +73,7 @@ static inline int skiplist_insert_with_addr(skiplist *list, uint64_t lookup,
     x->addr = addr;
     return 0;
   } else {
+
     level = rand_level();
     if (level > list->level) {
       for (i = list->level + 1; i <= level; i++) {
