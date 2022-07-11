@@ -1,0 +1,10 @@
+STD=-DREDIS_STATIC= -g
+WARN=-Wall -W -Wno-variadic-macros
+OPT=-O2
+MALLOC=jemalloc
+CFLAGS=
+LDFLAGS=
+REDIS_CFLAGS=
+REDIS_LDFLAGS=
+PREV_FINAL_CFLAGS=-DREDIS_STATIC= -g -Wall -W -Wno-variadic-macros -O2 -g -ggdb -fPIC -I../deps/geohash-int -I../deps/hiredis -I../deps/linenoise -I../deps/lua/src -DUSE_JEMALLOC -I../deps/jemalloc/include -I/home/zio_ae/zIO/strata/libfs/build//../src
+PREV_FINAL_LDFLAGS= -g -ggdb -rdynamic

@@ -1,0 +1,3 @@
+#define REDIS_GIT_SHA1 "81d17cac"
+#define REDIS_GIT_DIRTY "216"
+#define REDIS_BUILD_ID "pig-1650844128"
