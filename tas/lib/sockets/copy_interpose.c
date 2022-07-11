@@ -46,8 +46,8 @@
 #include <tas_sockets.h>
 #include <skiplist.h>
 
-//#define OPT_THRESHOLD 0xfffffffffffffffff
-#define OPT_THRESHOLD 8192
+#define OPT_THRESHOLD 0xfffffffffffffffff
+//#define OPT_THRESHOLD 8192
 
 #define PAGE_MASK 0xfffffffff000
 
@@ -55,8 +55,8 @@
 
 #define UFFD_PROTO
 
-//#define LOG(...) fprintf(stderr, __VA_ARGS__)
-#define LOG(str, ...) while(0) {}
+#define LOG(...) fprintf(stderr, __VA_ARGS__)
+//#define LOG(str, ...) while(0) {}
 
 #define LOG_STATS(...) fprintf(stderr, __VA_ARGS__)
 
@@ -133,8 +133,8 @@ static int (*libc_pselect)(int nfds, fd_set *readfds, fd_set *writefds,
 
 static void* (*libc_memcpy)(void* dest, const void* src, size_t n);
 static void* (*libc_memmove)(void* dest, const void* src, size_t n);
-static void (*libc_free)(void* ptr);
-
+//static void (*libc_free)(void* ptr);
+//
 skiplist addr_list;
 
 void print_trace(void) {
@@ -313,7 +313,7 @@ ssize_t read(int sockfd, void *buf, size_t count)
   	//ret = libc_read(sockfd, buf, count);
 
 
-  LOG("tas read %zu bytes, page mask %lx, socket %d\n", ret, ((uint64_t) buf) & PAGE_MASK, sockfd);
+  LOG("read %zu bytes, page mask %lx, socket %d\n", ret, ((uint64_t) buf) & PAGE_MASK, sockfd);
   if(count > OPT_THRESHOLD){
   //if(ret > OPT_THRESHOLD){
 	LOG("receiving data\n");
@@ -728,9 +728,10 @@ done:
   }else if(n > 1024) LOG("sizeable, but not large enough copy from %p to %p of size %zu\n", dest, src, n);
   return libc_memcpy(dest, src, n);
 }
-
+/*
 void free(void* ptr){
 
+#ifndef UFFD_PROTO
 	uint64_t ptr_bounded = (uint64_t) ptr & PAGE_MASK;
 	snode* entry = skiplist_search(&addr_list, ptr_bounded);
 
@@ -743,9 +744,10 @@ void free(void* ptr){
 			skiptlist_delete(&addr_list, ptr_bounded);
 		}
 	}
+#endif
 	return libc_free(ptr);
 }
-
+*/
 void* memmove (void* dest, const void* src, size_t n){
   
   ensure_init();
@@ -990,7 +992,7 @@ static void init(void)
   
   libc_memmove = bind_symbol("memmove");
   libc_memcpy = bind_symbol("memcpy");
-  libc_free = bind_symbol("free");
+  //libc_free = bind_symbol("free");
 
   //new tracking code
   skiplist_init(&addr_list);

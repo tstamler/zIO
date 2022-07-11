@@ -1,0 +1,56 @@
+MTCP_BASE?=${HOME}/mtcp
+DPDK_INC=${MTCP_BASE}/dpdk/include
+DPDK_LIB=${MTCP_BASE}/dpdk/lib/
+MTCP_INC    =-I${MTCP_BASE}/mtcp/include
+MTCP_LIB    =-L${MTCP_BASE}/mtcp/lib
+
+MTCP_CFLAGS+=${MTCP_INC} -DUSE_MTCP=1
+MTCP_LDFLAGS+= ${MTCP_LIB}
+
+DPDK_MACHINE_FLAGS = $(shell cat ${MTCP_BASE}/dpdk/include/cflags.txt)
+MTCP_CFLAGS+= ${MTCP_INC} ${DPDK_MACHINE_FLAGS} -I${DPDK_INC} -include $(DPDK_INC)/rte_config.h
+
+MTCP_LDLIBS += -Wl,-export-dynamic
+MTCP_LDLIBS += -Wl,--start-group
+MTCP_LDLIBS += -L${DPDK_LIB}
+MTCP_LDLIBS += -Wl,-lmtcp
+MTCP_LDLIBS += -Wl,-lnuma
+MTCP_LDLIBS += -Wl,-lpthread
+MTCP_LDLIBS += -Wl,-lrt
+MTCP_LDLIBS += -Wl,-ldl
+MTCP_LDLIBS += -Wl,--whole-archive
+MTCP_LDLIBS += -Wl,-lrte_distributor
+MTCP_LDLIBS += -Wl,-lrte_kni
+MTCP_LDLIBS += -Wl,-lrte_pipeline
+MTCP_LDLIBS += -Wl,-lrte_table
+MTCP_LDLIBS += -Wl,-lrte_port
+MTCP_LDLIBS += -Wl,-lrte_timer
+MTCP_LDLIBS += -Wl,-lrte_hash
+MTCP_LDLIBS += -Wl,-lrte_lpm
+MTCP_LDLIBS += -Wl,-lrte_power
+MTCP_LDLIBS += -Wl,-lrte_acl
+MTCP_LDLIBS += -Wl,-lrte_meter
+MTCP_LDLIBS += -Wl,-lrte_sched
+MTCP_LDLIBS += -Wl,-lm
+MTCP_LDLIBS += -Wl,-lrt
+MTCP_LDLIBS += -Wl,-lrte_kvargs
+MTCP_LDLIBS += -Wl,-lrte_mbuf
+MTCP_LDLIBS += -Wl,-lrte_ip_frag
+MTCP_LDLIBS += -Wl,-lethdev
+MTCP_LDLIBS += -Wl,-lrte_mempool
+MTCP_LDLIBS += -Wl,-lrte_ring
+MTCP_LDLIBS += -Wl,-lrte_eal
+MTCP_LDLIBS += -Wl,-lrte_cmdline
+MTCP_LDLIBS += -Wl,-lrte_cfgfile
+MTCP_LDLIBS += -Wl,-lrte_pmd_bond
+MTCP_LDLIBS += -Wl,-lrte_pmd_vmxnet3_uio
+MTCP_LDLIBS += -Wl,-lrte_pmd_i40e
+MTCP_LDLIBS += -Wl,-lrte_pmd_ixgbe
+MTCP_LDLIBS += -Wl,-lrte_pmd_e1000
+MTCP_LDLIBS += -Wl,-lrte_pmd_ring
+MTCP_LDLIBS += -Wl,--no-whole-archive
+MTCP_LDLIBS += -Wl,-lrt
+MTCP_LDLIBS += -Wl,-lm
+MTCP_LDLIBS += -Wl,-ldl
+MTCP_LDLIBS += -Wl,--end-group
+
