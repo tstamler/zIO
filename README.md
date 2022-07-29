@@ -1,8 +1,6 @@
 # zIO - Transparent Zero Copy IO Library <!-- omit in toc -->
 
 - [1. System requirements (Tested environment)](#1-system-requirements-tested-environment)
-  - [1.1. Hardware requirements](#11-hardware-requirements)
-  - [1.2. Software requirements](#12-software-requirements
 - [2. Dependent package installation](#2-dependent-package-installation)
 - [3. Hardware setup](#3-hardware-setup)
 - [4. Download source code](#4-download-source-code)
@@ -10,9 +8,6 @@
 - [6. Running zIO benchmarks](#11-running-zIO-benchmarks)
 - [7. Compiling kernel bypass stacks](#5-compiling-kernel-bypass)
 - [8. Running zIO+IO and kernel bypass benchmarks](#11-running-kernel-bypass-benchmarks)
-
-> If you are using our testbed for SOSP 2021 Artifact Evaluation, please read [README for Artifact Evaluation Reviewers]() first. It is provided on the HotCRP submission page.  
-***After reading it, you can directly go on to [Configuring LineFS](#5-configuring-linefs).***
 
 ## 1. System requirements (Tested environment)
 
